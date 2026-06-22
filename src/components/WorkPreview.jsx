@@ -1,20 +1,18 @@
-import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getFeaturedProjects } from '../data/portfolio';
-import ProjectCard from './ProjectCard';
+import WorkList from './WorkList';
 import { useReveal } from '../hooks/useReveal';
 import './WorkPreview.css';
 
 export default function WorkPreview() {
   const headerRef = useReveal();
-  const [hoveredId, setHoveredId] = useState(null);
   const featured = getFeaturedProjects();
 
   return (
     <section id="work" className="work-preview">
       <div className="work-preview__inner">
-        <div ref={headerRef} className="work-preview__header reveal">
-          <span className="work-preview__label">Selected Work</span>
+        <div ref={headerRef} className="work-preview__header reveal reveal--work">
+          <span className="eyebrow work-preview__label">Selected Work</span>
           <h2 className="work-preview__title">
             만든 것들,<br />
             <em>그리고 배운 것들</em>
@@ -27,19 +25,7 @@ export default function WorkPreview() {
           </Link>
         </div>
 
-        <div className="work-preview__grid">
-          {featured.map((project, i) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              index={i}
-              isHovered={hoveredId === project.id}
-              isDimmed={hoveredId !== null && hoveredId !== project.id}
-              onHover={() => setHoveredId(project.id)}
-              onLeave={() => setHoveredId(null)}
-            />
-          ))}
-        </div>
+        <WorkList projects={featured} listKey="preview" />
       </div>
     </section>
   );

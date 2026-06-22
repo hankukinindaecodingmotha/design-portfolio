@@ -38,8 +38,8 @@ export default function Navbar() {
   return (
     <header className={`nav ${scrolled || !isHome ? 'nav--scrolled' : ''}`}>
       <div className="nav__inner">
-        <Link to="/" className="nav__logo" onClick={() => setMenuOpen(false)}>
-          {profile.name.split(' ')[0]}
+        <Link to="/" className="nav__logo nav__logo--hanja" onClick={() => setMenuOpen(false)} aria-label={profile.name}>
+          {profile.nameHanja}
           <span className="nav__logo-dot" />
         </Link>
 

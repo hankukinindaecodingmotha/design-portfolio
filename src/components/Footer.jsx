@@ -8,12 +8,12 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer__inner">
         <div className="footer__top">
-          <p className="footer__name">{profile.name}</p>
+          <p className="footer__name hanja">{profile.nameHanja}</p>
           <p className="footer__role">{profile.role}</p>
         </div>
         <div className="footer__bottom">
           <p className="footer__copy">
-            &copy; {year} {profile.name}. All rights reserved.
+            &copy; {year} {profile.nameHanja}. All rights reserved.
           </p>
           <a href="#" className="footer__top-link">
             Back to top

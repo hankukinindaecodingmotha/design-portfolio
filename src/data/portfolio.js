@@ -1,5 +1,6 @@
 export const profile = {
   name: '정태주',
+  nameHanja: '鄭泰柱',
   role: 'Visual Designer',
   tagline: '감각과 구조가 만나는 곳에서\n브랜드의 이야기를 디자인합니다.',
   email: 'hello@example.com',
@@ -19,18 +20,59 @@ export const profile = {
   hero: {
     kicker: 'Creative\nVisual Designer',
     headline: [
-      { text: 'VISUAL', type: 'display' },
-      { text: 'DESIGN', type: 'display' },
-      { text: 'that speaks', type: 'serif' },
+      { text: '鄭泰', type: 'hanja' },
+      { text: '柱', type: 'hanja-accent' },
     ],
     intro:
       'Seoul 기반 비주얼 디자이너 — 감각과 구조가 만나는 곳에서 대담한 브랜드 시스템과 디지털 경험을 만듭니다.',
   },
-  // HLS 영상 배너. 외부 CDN(예: Pinterest)은 CORS로 차단될 수 있으며,
-  // 그 경우 자동으로 다크 모션 폴백이 표시됩니다.
-  // 안정적인 운영을 원하면 public/videos/ 에 자체 호스팅 .m3u8 을 넣고 경로를 바꾸세요.
-  heroVideoUrl:
-    'https://v1.pinimg.com/videos/iht/hls/ea/af/2e/eaaf2e47033dca3123989d0e1a51fec0.m3u8',
+  // 3D 히어로 — public/models/ 에 GLB 배치 (Desktop/3D 폴더 심볼릭 링크)
+  hero3d: {
+    enabled: true,
+    models: [
+      {
+        file: 'Meshy_AI_Exploded_view_of_a_me_0604055323_texture.glb',
+        scale: 2.4,
+        position: [0.35, 0, 0],
+        rotation: [0.12, -0.55, 0.05],
+        parallax: { rotate: 0.22, float: 0.1 },
+        scrollBoost: 0.25,
+      },
+      {
+        file: 'Meshy_AI_Watch_Balance_Wheel_E_0604071602_image-to-3d-texture.glb',
+        scale: 1.1,
+        position: [0.9, 0.45, 0.25],
+        rotation: [0.35, 0.15, 0.4],
+        parallax: { rotate: 0.5, float: 0.22 },
+        scrollBoost: 0.45,
+      },
+      {
+        file: 'Meshy_AI_Watch_Crown_External__0604071508_image-to-3d-texture.glb',
+        scale: 0.85,
+        position: [0.1, -0.35, 0.35],
+        rotation: [-0.15, 0.7, 0],
+        parallax: { rotate: 0.42, float: 0.18 },
+        scrollBoost: 0.35,
+      },
+      {
+        file: 'Meshy_AI_Watch_Middle_Gold_Gea_0604071552_image-to-3d-texture.glb',
+        scale: 0.9,
+        position: [1.05, -0.15, -0.15],
+        rotation: [0.1, -0.3, 0.2],
+        parallax: { rotate: 0.38, float: 0.16 },
+        scrollBoost: 0.3,
+      },
+      {
+        file: 'swatch_logo.glb',
+        scale: 0.55,
+        position: [-0.15, 0.75, 0.45],
+        rotation: [0, 0, 0],
+        parallax: { rotate: 0.65, float: 0.3 },
+        scrollBoost: 0.55,
+      },
+    ],
+  },
+  heroVideoUrl: null,
   heroPoster: undefined,
 };
 

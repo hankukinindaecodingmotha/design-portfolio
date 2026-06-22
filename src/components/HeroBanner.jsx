@@ -5,10 +5,11 @@ import { useParallax } from '../hooks/useParallax';
 import './HeroBanner.css';
 
 const VideoBackground = lazy(() => import('./VideoBackground'));
+const HeroScene3D = lazy(() => import('./HeroScene3D'));
 
-function HeroFallback() {
+function HeroFallback({ className = '' }) {
   return (
-    <div className="hero-banner__fallback" aria-hidden="true">
+    <div className={`hero-banner__fallback ${className}`.trim()} aria-hidden="true">
       <div className="hero-banner__grain" />
       <div className="hero-banner__orb hero-banner__orb--1" />
       <div className="hero-banner__orb hero-banner__orb--2" />
@@ -42,28 +43,41 @@ function ScrollBadge() {
 }
 
 export default function HeroBanner({ loaded }) {
-  const [videoReady, setVideoReady] = useState(false);
-  const parallaxRef = useParallax();
+  const [mediaReady, setMediaReady] = useState(false);
+  const { ref: parallaxRef, pointer } = useParallax();
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  const useVideo = profile.heroVideoUrl && !prefersReducedMotion;
+  const use3d = profile.hero3d?.enabled && profile.hero3d.models?.length && !prefersReducedMotion;
+  const useVideo = profile.heroVideoUrl && !prefersReducedMotion && !use3d;
   const { kicker, headline, intro } = profile.hero;
 
   return (
     <section className="hero-banner" ref={parallaxRef}>
       <div className="hero-banner__media">
-        <HeroFallback />
+        <HeroFallback className={use3d && mediaReady ? 'hero-banner__fallback--hidden' : ''} />
+
+        {use3d && (
+          <div className={`hero-banner__scene ${mediaReady ? 'hero-banner__scene--ready' : ''}`}>
+            <Suspense fallback={null}>
+              <HeroScene3D
+                models={profile.hero3d.models}
+                pointer={pointer}
+                onReady={() => setMediaReady(true)}
+              />
+            </Suspense>
+          </div>
+        )}
 
         {useVideo && (
-          <div className={`hero-banner__video ${videoReady ? 'hero-banner__video--ready' : ''}`}>
+          <div className={`hero-banner__video ${mediaReady ? 'hero-banner__video--ready' : ''}`}>
             <Suspense fallback={null}>
               <VideoBackground
                 src={profile.heroVideoUrl}
                 poster={profile.heroPoster}
-                onReady={() => setVideoReady(true)}
-                onError={() => setVideoReady(false)}
+                onReady={() => setMediaReady(true)}
+                onError={() => setMediaReady(false)}
               />
             </Suspense>
           </div>
@@ -98,9 +112,13 @@ export default function HeroBanner({ loaded }) {
               <span key={i} className="hero-banner__line">
                 <span
                   className={
-                    line.type === 'serif'
-                      ? 'hero-banner__word serif-accent'
-                      : 'hero-banner__word display'
+                    line.type === 'hanja'
+                      ? 'hero-banner__word hanja'
+                      : line.type === 'hanja-accent'
+                        ? 'hero-banner__word hanja hero-banner__word--accent'
+                        : line.type === 'serif'
+                          ? 'hero-banner__word serif-accent'
+                          : 'hero-banner__word display'
                   }
                   style={{ transitionDelay: `${0.15 * i + 0.25}s` }}
                 >

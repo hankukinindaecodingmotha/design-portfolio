@@ -24,6 +24,14 @@
   justify-content: space-between;
 }
 
+.nav__logo--hanja {
+  font-family: var(--hanja);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: none;
+}
+
 .nav__logo {
   font-family: var(--display);
   font-size: 1.15rem;

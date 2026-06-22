@@ -37,6 +37,20 @@
   opacity: 1;
 }
 
+.hero-banner__scene {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 1.4s var(--ease);
+  pointer-events: none;
+  transform: translate(calc(var(--mx) * -8px), calc(var(--my) * -8px));
+}
+
+.hero-banner__scene--ready {
+  opacity: 1;
+}
+
 .hero-banner__video .video-bg {
   width: 100%;
   height: 100%;
@@ -52,6 +66,11 @@
   background:
     radial-gradient(120% 90% at 70% 15%, #1a1a1f 0%, #0a0a0b 55%, #050506 100%);
   overflow: hidden;
+  transition: opacity 1.2s var(--ease);
+}
+
+.hero-banner__fallback--hidden {
+  opacity: 0;
 }
 
 .hero-banner__grain {
@@ -87,7 +106,7 @@
   top: 42%;
   right: 34%;
   /* 유일한 포인트 컬러 — 아주 은은하게 */
-  background: radial-gradient(circle at 40% 40%, rgba(255, 84, 54, 0.4) 0%, rgba(255, 84, 54, 0.1) 50%, transparent 75%);
+  background: radial-gradient(circle at 40% 40%, rgba(61, 127, 255, 0.45) 0%, rgba(61, 127, 255, 0.12) 50%, transparent 75%);
   --depth: 22;
   animation-delay: -3s;
 }
@@ -224,7 +243,18 @@
   line-height: 0.96;
 }
 
-/* 가운데 라인을 살짝 우측으로 들여 레퍼런스의 리듬감 */
+.hero-banner__word.hanja {
+  font-size: clamp(3.8rem, 13vw, 11rem);
+  line-height: 0.95;
+  font-weight: 600;
+}
+
+.hero-banner__word.hanja.hero-banner__word--accent {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* 두 번째 한자 줄 들여쓰기 */
 .hero-banner__line:nth-child(2) {
   margin-left: clamp(2rem, 8vw, 7rem);
 }

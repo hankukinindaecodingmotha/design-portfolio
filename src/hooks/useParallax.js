@@ -11,6 +11,7 @@ import { useEffect, useRef } from 'react';
  */
 export function useParallax() {
   const ref = useRef(null);
+  const pointer = useRef({ x: 0, y: 0, progress: 0 });
 
   useEffect(() => {
     const el = ref.current;
@@ -24,6 +25,7 @@ export function useParallax() {
       el.style.setProperty('--hp', '0');
       el.style.setProperty('--mx', '0');
       el.style.setProperty('--my', '0');
+      pointer.current = { x: 0, y: 0, progress: 0 };
       return;
     }
 
@@ -38,6 +40,7 @@ export function useParallax() {
       const height = el.offsetHeight || window.innerHeight;
       const progress = Math.min(Math.max(window.scrollY / height, 0), 1);
       el.style.setProperty('--hp', progress.toFixed(4));
+      pointer.current.progress = progress;
     };
 
     const onScroll = () => {
@@ -55,6 +58,8 @@ export function useParallax() {
       curMy += (targetMy - curMy) * 0.08;
       el.style.setProperty('--mx', curMx.toFixed(4));
       el.style.setProperty('--my', curMy.toFixed(4));
+      pointer.current.x = curMx;
+      pointer.current.y = curMy;
       if (
         mouseActive ||
         Math.abs(targetMx - curMx) > 0.001 ||
@@ -97,5 +102,5 @@ export function useParallax() {
     };
   }, []);
 
-  return ref;
+  return { ref, pointer };
 }

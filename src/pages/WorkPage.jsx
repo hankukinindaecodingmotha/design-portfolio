@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react';
 import { categories, projects } from '../data/portfolio';
-import ProjectCard from '../components/ProjectCard';
+import WorkList from '../components/WorkList';
 import { useReveal } from '../hooks/useReveal';
 import './WorkPage.css';
 
 export default function WorkPage() {
   const headerRef = useReveal();
   const [activeCategory, setActiveCategory] = useState('All');
-  const [hoveredId, setHoveredId] = useState(null);
 
   const filtered = useMemo(() => {
     if (activeCategory === 'All') return projects;
@@ -17,8 +16,8 @@ export default function WorkPage() {
   return (
     <main className="work-page">
       <header className="work-page__hero">
-        <div ref={headerRef} className="work-page__header reveal">
-          <span className="work-page__label">Portfolio</span>
+        <div ref={headerRef} className="work-page__header reveal reveal--work">
+          <span className="eyebrow work-page__label">Portfolio</span>
           <h1 className="work-page__title">
             Work<br />
             <em>Archive</em>
@@ -30,11 +29,13 @@ export default function WorkPage() {
       </header>
 
       <div className="work-page__inner">
-        <div className="work-page__filters">
+        <div className="work-page__filters" role="tablist" aria-label="프로젝트 카테고리">
           {categories.map((cat) => (
             <button
               key={cat}
               type="button"
+              role="tab"
+              aria-selected={activeCategory === cat}
               className={`work-page__filter ${activeCategory === cat ? 'work-page__filter--active' : ''}`}
               onClick={() => setActiveCategory(cat)}
             >
@@ -50,18 +51,8 @@ export default function WorkPage() {
 
         <p className="work-page__count">{filtered.length} projects</p>
 
-        <div className="work-page__grid">
-          {filtered.map((project, i) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              index={i}
-              isHovered={hoveredId === project.id}
-              isDimmed={hoveredId !== null && hoveredId !== project.id}
-              onHover={() => setHoveredId(project.id)}
-              onLeave={() => setHoveredId(null)}
-            />
-          ))}
+        <div className="work-page__list-wrap work-list--filtered" key={activeCategory}>
+          <WorkList projects={filtered} listKey={activeCategory} />
         </div>
       </div>
     </main>

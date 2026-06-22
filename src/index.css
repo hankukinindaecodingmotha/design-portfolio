@@ -21,8 +21,8 @@
   --text-light: #0a0a0b;    /* 반전 (흰 버튼/액센트 위 글자) */
 
   /* ── 포인트 컬러 (아주 절제해서 사용) ── */
-  --accent: #ff5436;
-  --accent-soft: rgba(255, 84, 54, 0.16);
+  --accent: #3d7fff;
+  --accent-soft: rgba(61, 127, 255, 0.16);
 
   /* ── Lines ── */
   --border: rgba(255, 255, 255, 0.12);
@@ -32,6 +32,7 @@
   --serif: 'Instrument Serif', 'Nanum Myeongjo', Georgia, serif;
   --sans: 'DM Sans', 'Noto Sans KR', system-ui, sans-serif;
   --display: 'Archivo', 'Noto Sans KR', system-ui, sans-serif;
+  --hanja: 'Noto Serif SC', 'Nanum Myeongjo', serif;
 
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --max-width: 1280px;
@@ -56,6 +57,14 @@
   font-style: italic;
   text-transform: none;
   letter-spacing: -0.01em;
+}
+
+.hanja {
+  font-family: var(--hanja);
+  font-weight: 500;
+  font-style: normal;
+  text-transform: none;
+  letter-spacing: 0.06em;
 }
 
 /* 섹션 상단 마이크로 라벨 */
@@ -163,12 +172,20 @@ html {
 .reveal--right { transform: translateX(48px); }
 .reveal--scale { transform: scale(0.92); }
 .reveal--up-lg { transform: translateY(64px); }
+.reveal--work {
+  transform: translateX(-24px);
+  filter: none;
+}
 
 .reveal--left.revealed,
 .reveal--right.revealed,
 .reveal--scale.revealed,
 .reveal--up-lg.revealed {
   transform: none;
+}
+
+.reveal.reveal--work.revealed {
+  filter: none;
 }
 
 .reveal-delay-1 { transition-delay: 0.08s; }
