@@ -25,17 +25,20 @@ export default function HeroBanner({ loaded }) {
 
   return (
     <section className="hero-banner">
-      <div className={`hero-banner__media ${videoReady ? 'hero-banner__media--ready' : ''}`}>
-        {useVideo ? (
-          <Suspense fallback={<HeroFallback />}>
-            <VideoBackground
-              src={profile.heroVideoUrl}
-              poster={profile.heroPoster}
-              onReady={() => setVideoReady(true)}
-            />
-          </Suspense>
-        ) : (
-          <HeroFallback />
+      <div className="hero-banner__media">
+        <HeroFallback />
+
+        {useVideo && (
+          <div className={`hero-banner__video ${videoReady ? 'hero-banner__video--ready' : ''}`}>
+            <Suspense fallback={null}>
+              <VideoBackground
+                src={profile.heroVideoUrl}
+                poster={profile.heroPoster}
+                onReady={() => setVideoReady(true)}
+                onError={() => setVideoReady(false)}
+              />
+            </Suspense>
+          </div>
         )}
       </div>
 

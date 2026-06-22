@@ -1,4 +1,6 @@
 .about {
+  position: relative;
+  z-index: 1;
   padding: clamp(5rem, 10vw, 8rem) 0 clamp(3rem, 6vw, 5rem);
   background: var(--bg-dark);
   color: var(--text-light);

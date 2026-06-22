@@ -2,8 +2,10 @@
   transition: opacity 0.4s var(--ease);
 }
 
-.project-card--dimmed {
-  opacity: 0.5;
+@media (hover: hover) {
+  .project-card--dimmed {
+    opacity: 0.5;
+  }
 }
 
 .project-card__link {
