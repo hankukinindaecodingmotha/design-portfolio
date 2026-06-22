@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import SplineHero from '../components/SplineHero';
+import HeroBanner from '../components/HeroBanner';
 import WorkPreview from '../components/WorkPreview';
 import About from '../components/About';
 import Contact from '../components/Contact';
@@ -23,7 +23,7 @@ export default function HomePage() {
 
   return (
     <main>
-      <SplineHero loaded={loaded} />
+      <HeroBanner loaded={loaded} />
       <WorkPreview />
       <About />
       <Contact />

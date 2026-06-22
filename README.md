@@ -4,7 +4,7 @@
 
 ## 페이지
 
-- `/`: Spline 3D 히어로 배너 + 대표 작업 + About + Contact
+- `/`: HLS 영상 배너 + 대표 작업 + About + Contact
 - `/work`: 전체 프로젝트 아카이브 (필터)
 - `/work/:slug`: 프로젝트 상세
 
@@ -15,9 +15,15 @@ npm install
 npm run dev
 ```
 
-## Spline 배너 연결
+## 영상 배너 (HLS)
 
-`src/data/portfolio.js`의 `splineSceneUrl`에 Spline에서 Export한 URL(React/Code)을 넣으면 됩니다.
+`public/videos/` 폴더에 `.m3u8` 파일과 함께 세그먼트 파일(`.ts`, 하위 `.m3u8`)을 모두 넣으세요.
+
+`src/data/portfolio.js`의 `heroVideoUrl`로 경로를 지정할 수 있습니다.
+
+```js
+heroVideoUrl: '/videos/hero.m3u8',
+```
 
 ## 빌드
 

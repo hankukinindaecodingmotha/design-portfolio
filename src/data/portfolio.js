@@ -15,8 +15,9 @@ export const profile = {
   ],
   services: ['Brand Identity', 'UI/UX Design', 'Editorial Design', 'Art Direction'],
   tools: ['Figma', 'Adobe CC', 'Blender', 'After Effects'],
-  // Spline → Export → Code → React 에서 복사한 URL로 교체하세요
-  splineSceneUrl: 'https://prod.spline.design/6Wq1Q7YGyM-iab9i/scene.splinecode',
+  // HLS 영상 배너 — public/videos/ 폴더에 .m3u8 및 세그먼트 파일을 함께 넣으세요
+  heroVideoUrl: '/videos/hero.m3u8',
+  heroPoster: undefined,
 };
 
 export const categories = [
