@@ -1,0 +1,50 @@
+.footer {
+  padding: 3rem clamp(1.5rem, 4vw, 3rem);
+  border-top: 1px solid var(--border);
+}
+
+.footer__inner {
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+
+.footer__top {
+  margin-bottom: 2rem;
+}
+
+.footer__name {
+  font-family: var(--serif);
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.footer__role {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.footer__copy {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.footer__top-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  transition: color 0.3s;
+}
+
+.footer__top-link:hover {
+  color: var(--accent);
+}
