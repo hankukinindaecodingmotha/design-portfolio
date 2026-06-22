@@ -53,7 +53,7 @@ export default function ProjectCard({
   return (
     <article
       ref={ref}
-      className={`project-card reveal reveal-delay-${(index % 3) + 1} ${isDimmed ? 'project-card--dimmed' : ''}`}
+      className={`project-card reveal reveal--scale reveal-delay-${(index % 3) + 1} ${isDimmed ? 'project-card--dimmed' : ''}`}
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
     >

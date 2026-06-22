@@ -9,7 +9,7 @@ export default function About() {
   return (
     <section id="about" className="about">
       <div className="about__inner">
-        <div ref={headerRef} className="about__header reveal">
+        <div ref={headerRef} className="about__header reveal reveal--left">
           <span className="about__label">About</span>
           <h2 className="about__title">
             디자인은<br />
@@ -17,7 +17,7 @@ export default function About() {
           </h2>
         </div>
 
-        <div ref={contentRef} className="about__content reveal reveal-delay-2">
+        <div ref={contentRef} className="about__content reveal reveal--right reveal-delay-2">
           <div className="about__text">
             {profile.about.map((paragraph, i) => (
               <p key={i} className="about__paragraph">{paragraph}</p>

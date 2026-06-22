@@ -1,4 +1,7 @@
 .hero-banner {
+  --hp: 0;
+  --mx: 0;
+  --my: 0;
   position: relative;
   z-index: 0;
   isolation: isolate;
@@ -11,9 +14,13 @@
 
 .hero-banner__media {
   position: absolute;
-  inset: 0;
+  inset: -6%;
   z-index: 0;
   overflow: hidden;
+  /* 스크롤 시 배경이 더 느리게 내려가며 깊이감(패럴랙스)을 만든다 */
+  transform: translateY(calc(var(--hp) * 16vh)) scale(calc(1 + var(--hp) * 0.12));
+  transform-origin: center;
+  will-change: transform;
 }
 
 .hero-banner__video {
@@ -23,6 +30,8 @@
   opacity: 0;
   transition: opacity 1s var(--ease);
   pointer-events: none;
+  /* 마우스에 따라 영상 레이어가 살짝 반대로 움직여 깊이감을 준다 */
+  transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -10px));
 }
 
 .hero-banner__video--ready {
@@ -43,10 +52,14 @@
   overflow: hidden;
 }
 
+/* 부유(float) 애니메이션과 마우스 패럴랙스를 한 요소에서 합성.
+   --depth 가 클수록 가까운 레이어처럼 마우스에 크게 반응한다. */
 .hero-banner__orb {
   position: absolute;
   border-radius: 50%;
   filter: blur(1px);
+  --depth: 24;
+  will-change: transform;
   animation: orbFloat 8s ease-in-out infinite;
 }
 
@@ -57,6 +70,7 @@
   right: 10%;
   background: radial-gradient(circle at 30% 30%, #fff 0%, #e85d4c 45%, #c94a3d 100%);
   opacity: 0.85;
+  --depth: 36;
 }
 
 .hero-banner__orb--2 {
@@ -65,6 +79,7 @@
   top: 35%;
   right: 38%;
   background: radial-gradient(circle at 40% 40%, #fff 0%, #e8d5c4 60%, #d4a88a 100%);
+  --depth: 22;
   animation-delay: -2s;
 }
 
@@ -74,12 +89,17 @@
   bottom: 25%;
   right: 22%;
   background: radial-gradient(circle at 35% 35%, #f5f0e8 0%, #1a1a1a 100%);
+  --depth: 52;
   animation-delay: -4s;
 }
 
 @keyframes orbFloat {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-24px) scale(1.03); }
+  0%, 100% {
+    transform: translate(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px)) translateY(0) scale(1);
+  }
+  50% {
+    transform: translate(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px)) translateY(-24px) scale(1.03);
+  }
 }
 
 .hero-banner__overlay {
@@ -99,6 +119,10 @@
   margin: 0 auto;
   width: 100%;
   padding: calc(var(--nav-height) + 3rem) clamp(1.5rem, 4vw, 3rem) 5rem;
+  /* 스크롤 시 콘텐츠가 위로 올라가며 사라진다 (배경보다 빠르게) */
+  transform: translateY(calc(var(--hp) * -7vh));
+  opacity: calc(1 - var(--hp) * 1.15);
+  will-change: transform, opacity;
 }
 
 .hero-banner__label {
@@ -212,7 +236,7 @@
 }
 
 .hero-banner__scroll--loaded {
-  opacity: 1;
+  opacity: clamp(0, calc(1 - var(--hp) * 3), 1);
 }
 
 .hero-banner__scroll-line {

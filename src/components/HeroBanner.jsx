@@ -1,6 +1,7 @@
 import { lazy, Suspense, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { profile } from '../data/portfolio';
+import { useParallax } from '../hooks/useParallax';
 import './HeroBanner.css';
 
 const VideoBackground = lazy(() => import('./VideoBackground'));
@@ -17,6 +18,7 @@ function HeroFallback() {
 
 export default function HeroBanner({ loaded }) {
   const [videoReady, setVideoReady] = useState(false);
+  const parallaxRef = useParallax();
   const prefersReducedMotion =
     typeof window !== 'undefined' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -24,7 +26,7 @@ export default function HeroBanner({ loaded }) {
   const useVideo = profile.heroVideoUrl && !prefersReducedMotion;
 
   return (
-    <section className="hero-banner">
+    <section className="hero-banner" ref={parallaxRef}>
       <div className="hero-banner__media">
         <HeroFallback />
 

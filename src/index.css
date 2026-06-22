@@ -56,25 +56,53 @@ img {
   color: var(--text-light);
 }
 
+/* ── 스크롤 등장(reveal) 시스템 ───────────────────────────
+   기본은 아래에서 위로 떠오르며 살짝 흐릿함이 걷히는 효과.
+   변형 클래스로 방향/스케일을 바꿀 수 있다. */
 .reveal {
   opacity: 0;
-  transform: translateY(16px);
+  transform: translateY(34px);
+  filter: blur(6px);
   transition:
-    opacity 0.6s var(--ease),
-    transform 0.6s var(--ease);
-  will-change: opacity, transform;
+    opacity 0.8s var(--ease),
+    transform 0.8s var(--ease),
+    filter 0.8s var(--ease);
+  will-change: opacity, transform, filter;
 }
 
 .reveal.revealed {
   opacity: 1;
   transform: none;
+  filter: blur(0);
   will-change: auto;
 }
 
-.reveal-delay-1 { transition-delay: 0.1s; }
-.reveal-delay-2 { transition-delay: 0.2s; }
-.reveal-delay-3 { transition-delay: 0.3s; }
-.reveal-delay-4 { transition-delay: 0.4s; }
+/* 방향 변형 */
+.reveal--left { transform: translateX(-48px); }
+.reveal--right { transform: translateX(48px); }
+.reveal--scale { transform: scale(0.92); }
+.reveal--up-lg { transform: translateY(64px); }
+
+.reveal--left.revealed,
+.reveal--right.revealed,
+.reveal--scale.revealed,
+.reveal--up-lg.revealed {
+  transform: none;
+}
+
+.reveal-delay-1 { transition-delay: 0.08s; }
+.reveal-delay-2 { transition-delay: 0.18s; }
+.reveal-delay-3 { transition-delay: 0.28s; }
+.reveal-delay-4 { transition-delay: 0.38s; }
+.reveal-delay-5 { transition-delay: 0.48s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    filter: none;
+    transform: none;
+    transition: opacity 0.3s linear;
+  }
+}
 
 @keyframes charReveal {
   to {

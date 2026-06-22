@@ -5,6 +5,7 @@ import './Contact.css';
 
 export default function Contact() {
   const headerRef = useReveal();
+  const infoRef = useReveal();
   const formRef = useReveal();
   const [formState, setFormState] = useState({ name: '', email: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
@@ -31,7 +32,7 @@ export default function Contact() {
         </div>
 
         <div className="contact__body">
-          <div className="contact__info reveal reveal-delay-1">
+          <div ref={infoRef} className="contact__info reveal reveal--left reveal-delay-1">
             <a href={`mailto:${profile.email}`} className="contact__email">
               {profile.email}
             </a>
@@ -55,7 +56,7 @@ export default function Contact() {
 
           <form
             ref={formRef}
-            className="contact__form reveal reveal-delay-2"
+            className="contact__form reveal reveal--right reveal-delay-2"
             onSubmit={handleSubmit}
           >
             <div className="contact__field">
