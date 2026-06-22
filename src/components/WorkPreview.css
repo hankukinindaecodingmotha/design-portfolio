@@ -15,12 +15,25 @@
 }
 
 .work-preview__label {
-  display: block;
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 1rem;
+}
+
+.work-preview__label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .work-preview__title {

@@ -7,18 +7,77 @@
 }
 
 :root {
-  --bg: #f5f0e8;
-  --bg-dark: #1a1a1a;
-  --text: #1a1a1a;
-  --text-muted: #6b6560;
-  --text-light: #f5f0e8;
-  --accent: #e85d4c;
-  --border: rgba(26, 26, 26, 0.12);
-  --serif: 'Instrument Serif', Georgia, serif;
-  --sans: 'DM Sans', system-ui, sans-serif;
+  /* ── Surfaces (블랙 기반) ── */
+  --bg: #0a0a0b;            /* 메인 near-black */
+  --bg-dark: #050506;       /* 더 깊은 대비 밴드 */
+  --bg-elevated: #161618;   /* 카드/엘리베이션 */
+  --surface: rgba(255, 255, 255, 0.035);
+  --surface-hover: rgba(255, 255, 255, 0.06);
+
+  /* ── Text (화이트 기반) ── */
+  --text: #f4f3f1;          /* near-white */
+  --text-muted: #8d8a85;    /* 뮤트 그레이 */
+  --text-faint: rgba(244, 243, 241, 0.45);
+  --text-light: #0a0a0b;    /* 반전 (흰 버튼/액센트 위 글자) */
+
+  /* ── 포인트 컬러 (아주 절제해서 사용) ── */
+  --accent: #ff5436;
+  --accent-soft: rgba(255, 84, 54, 0.16);
+
+  /* ── Lines ── */
+  --border: rgba(255, 255, 255, 0.12);
+  --border-soft: rgba(255, 255, 255, 0.07);
+
+  /* ── Type ── */
+  --serif: 'Instrument Serif', 'Nanum Myeongjo', Georgia, serif;
+  --sans: 'DM Sans', 'Noto Sans KR', system-ui, sans-serif;
+  --display: 'Archivo', 'Noto Sans KR', system-ui, sans-serif;
+
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
   --max-width: 1280px;
-  --nav-height: 72px;
+  --nav-height: 76px;
+  --radius: 18px;
+}
+
+/* 와이드 그로테스크 디스플레이 유틸 — 레퍼런스의 "WE ARE FULL-SERVICE" 톤 */
+.display {
+  font-family: var(--display);
+  font-weight: 800;
+  font-stretch: 125%;
+  font-variation-settings: 'wdth' 125, 'wght' 800;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  line-height: 0.92;
+}
+
+.serif-accent {
+  font-family: var(--serif);
+  font-weight: 400;
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: -0.01em;
+}
+
+/* 섹션 상단 마이크로 라벨 */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: 0.72rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.eyebrow::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 html {
@@ -54,6 +113,28 @@ img {
 ::selection {
   background: var(--accent);
   color: var(--text-light);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.14);
+  border-radius: 100px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+html {
+  color-scheme: dark;
 }
 
 /* ── 스크롤 등장(reveal) 시스템 ───────────────────────────

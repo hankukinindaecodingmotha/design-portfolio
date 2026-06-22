@@ -16,9 +16,14 @@
 }
 
 .footer__name {
-  font-family: var(--serif);
-  font-size: 1.5rem;
-  margin-bottom: 0.25rem;
+  font-family: var(--display);
+  font-weight: 800;
+  font-stretch: 120%;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  line-height: 1;
+  margin-bottom: 0.5rem;
 }
 
 .footer__role {

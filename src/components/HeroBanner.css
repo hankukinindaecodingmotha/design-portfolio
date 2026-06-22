@@ -8,16 +8,16 @@
   min-height: 100vh;
   min-height: 100dvh;
   overflow: hidden;
+  background: var(--bg);
   display: flex;
-  align-items: flex-end;
 }
 
+/* ── 배경 미디어 (스크롤 패럴랙스) ── */
 .hero-banner__media {
   position: absolute;
   inset: -6%;
   z-index: 0;
   overflow: hidden;
-  /* 스크롤 시 배경이 더 느리게 내려가며 깊이감(패럴랙스)을 만든다 */
   transform: translateY(calc(var(--hp) * 16vh)) scale(calc(1 + var(--hp) * 0.12));
   transform-origin: center;
   will-change: transform;
@@ -28,10 +28,9 @@
   inset: 0;
   z-index: 1;
   opacity: 0;
-  transition: opacity 1s var(--ease);
+  transition: opacity 1.2s var(--ease);
   pointer-events: none;
-  /* 마우스에 따라 영상 레이어가 살짝 반대로 움직여 깊이감을 준다 */
-  transform: translate(calc(var(--mx) * -10px), calc(var(--my) * -10px));
+  transform: translate(calc(var(--mx) * -12px), calc(var(--my) * -12px));
 }
 
 .hero-banner__video--ready {
@@ -43,54 +42,64 @@
   height: 100%;
   object-fit: cover;
   object-position: center;
+  filter: saturate(0.85) contrast(1.05);
 }
 
+/* ── 다크 폴백 (영상 미로드 시) ── */
 .hero-banner__fallback {
   position: absolute;
   inset: 0;
-  background: linear-gradient(160deg, #f5f0e8 0%, #e8d5c4 50%, #f0e0d6 100%);
+  background:
+    radial-gradient(120% 90% at 70% 15%, #1a1a1f 0%, #0a0a0b 55%, #050506 100%);
   overflow: hidden;
 }
 
-/* 부유(float) 애니메이션과 마우스 패럴랙스를 한 요소에서 합성.
-   --depth 가 클수록 가까운 레이어처럼 마우스에 크게 반응한다. */
+.hero-banner__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.5;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: screen;
+}
+
 .hero-banner__orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(1px);
+  filter: blur(8px);
   --depth: 24;
   will-change: transform;
-  animation: orbFloat 8s ease-in-out infinite;
+  animation: orbFloat 9s ease-in-out infinite;
 }
 
 .hero-banner__orb--1 {
-  width: min(55vw, 420px);
-  height: min(55vw, 420px);
-  top: 15%;
-  right: 10%;
-  background: radial-gradient(circle at 30% 30%, #fff 0%, #e85d4c 45%, #c94a3d 100%);
-  opacity: 0.85;
-  --depth: 36;
+  width: min(60vw, 540px);
+  height: min(60vw, 540px);
+  top: 8%;
+  right: 6%;
+  background: radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.22) 0%, rgba(120, 120, 130, 0.18) 45%, transparent 72%);
+  --depth: 34;
 }
 
 .hero-banner__orb--2 {
-  width: min(28vw, 200px);
-  height: min(28vw, 200px);
-  top: 35%;
-  right: 38%;
-  background: radial-gradient(circle at 40% 40%, #fff 0%, #e8d5c4 60%, #d4a88a 100%);
+  width: min(34vw, 280px);
+  height: min(34vw, 280px);
+  top: 42%;
+  right: 34%;
+  /* 유일한 포인트 컬러 — 아주 은은하게 */
+  background: radial-gradient(circle at 40% 40%, rgba(255, 84, 54, 0.4) 0%, rgba(255, 84, 54, 0.1) 50%, transparent 75%);
   --depth: 22;
-  animation-delay: -2s;
+  animation-delay: -3s;
 }
 
 .hero-banner__orb--3 {
-  width: min(18vw, 140px);
-  height: min(18vw, 140px);
-  bottom: 25%;
-  right: 22%;
-  background: radial-gradient(circle at 35% 35%, #f5f0e8 0%, #1a1a1a 100%);
+  width: min(24vw, 200px);
+  height: min(24vw, 200px);
+  bottom: 14%;
+  left: 16%;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.14) 0%, transparent 70%);
   --depth: 52;
-  animation-delay: -4s;
+  animation-delay: -5s;
 }
 
 @keyframes orbFloat {
@@ -98,105 +107,171 @@
     transform: translate(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px)) translateY(0) scale(1);
   }
   50% {
-    transform: translate(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px)) translateY(-24px) scale(1.03);
+    transform: translate(calc(var(--mx) * var(--depth) * 1px), calc(var(--my) * var(--depth) * 1px)) translateY(-26px) scale(1.04);
   }
 }
 
+/* ── 가독성 오버레이 ── */
 .hero-banner__overlay {
   position: absolute;
   inset: 0;
   z-index: 1;
   background:
-    linear-gradient(to bottom, rgba(245, 240, 232, 0.72) 0%, rgba(245, 240, 232, 0.2) 45%, rgba(245, 240, 232, 0.82) 100%),
-    linear-gradient(to right, rgba(245, 240, 232, 0.94) 0%, rgba(245, 240, 232, 0.45) 50%, rgba(245, 240, 232, 0.1) 100%);
+    linear-gradient(to bottom, rgba(10, 10, 11, 0.55) 0%, rgba(10, 10, 11, 0.25) 38%, rgba(10, 10, 11, 0.85) 100%);
   pointer-events: none;
 }
 
-.hero-banner__content {
+.hero-banner__vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(120% 120% at 50% 40%, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+}
+
+/* ── 콘텐츠 프레임 ── */
+.hero-banner__frame {
   position: relative;
   z-index: 2;
+  width: 100%;
   max-width: var(--max-width);
   margin: 0 auto;
-  width: 100%;
-  padding: calc(var(--nav-height) + 3rem) clamp(1.5rem, 4vw, 3rem) 5rem;
-  /* 스크롤 시 콘텐츠가 위로 올라가며 사라진다 (배경보다 빠르게) */
-  transform: translateY(calc(var(--hp) * -7vh));
-  opacity: calc(1 - var(--hp) * 1.15);
+  padding: calc(var(--nav-height) + 2.5rem) clamp(1.5rem, 4vw, 3rem) 2.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform: translateY(calc(var(--hp) * -6vh));
+  opacity: calc(1 - var(--hp) * 1.05);
   will-change: transform, opacity;
 }
 
-.hero-banner__label {
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+.hero-banner__kicker {
+  position: absolute;
+  top: calc(var(--nav-height) + 2.5rem);
+  left: clamp(1.5rem, 4vw, 3rem);
+  display: flex;
+  flex-direction: column;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
-  margin-bottom: 1.5rem;
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s var(--ease) 0.1s;
+  transform: translateY(12px);
+  transition: opacity 0.8s var(--ease) 0.1s, transform 0.8s var(--ease) 0.1s;
 }
 
-.hero-banner__content--loaded .hero-banner__label {
+.hero-banner__frame.is-loaded .hero-banner__kicker {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
+}
+
+.hero-banner__corner {
+  position: absolute;
+  top: calc(var(--nav-height) + 2.2rem);
+  right: clamp(1.5rem, 4vw, 3rem);
+  color: var(--text);
+  opacity: 0;
+  transition: opacity 0.8s var(--ease) 0.2s, transform 0.4s var(--ease);
+}
+
+.hero-banner__frame.is-loaded .hero-banner__corner {
+  opacity: 1;
+}
+
+.hero-banner__corner:hover {
+  transform: rotate(45deg);
+}
+
+.hero-banner__content {
+  margin-top: auto;
+  margin-bottom: auto;
 }
 
 .hero-banner__title {
-  font-family: var(--serif);
-  font-size: clamp(3.5rem, 10vw, 8rem);
-  font-weight: 400;
-  line-height: 1.02;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.5rem;
-  max-width: 12ch;
+  display: flex;
+  flex-direction: column;
+  color: var(--text);
 }
 
-.hero-banner__char {
+.hero-banner__line {
+  display: block;
+  overflow: hidden;
+  padding: 0.02em 0.04em;
+  margin-left: -0.04em;
+}
+
+.hero-banner__word {
   display: inline-block;
+  transform: translateY(115%);
   opacity: 0;
-  transform: translateY(40px);
-  animation: charReveal 0.6s var(--ease) forwards;
+  transition: transform 0.95s var(--ease), opacity 0.95s var(--ease);
+  will-change: transform;
 }
 
-.hero-banner__tagline {
-  font-size: clamp(1rem, 2vw, 1.2rem);
-  color: var(--text-muted);
-  line-height: 1.7;
-  max-width: 400px;
-  margin-bottom: 2rem;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s var(--ease) 0.8s;
-}
-
-.hero-banner__content--loaded .hero-banner__tagline {
-  opacity: 1;
+.hero-banner__frame.is-loaded .hero-banner__word {
   transform: translateY(0);
+  opacity: 1;
+}
+
+.hero-banner__word.display {
+  font-size: clamp(3rem, 11vw, 9.5rem);
+  font-stretch: 125%;
+  font-variation-settings: 'wdth' 125, 'wght' 820;
+}
+
+.hero-banner__word.serif-accent {
+  font-size: clamp(3.4rem, 12vw, 10.5rem);
+  line-height: 0.96;
+}
+
+/* 가운데 라인을 살짝 우측으로 들여 레퍼런스의 리듬감 */
+.hero-banner__line:nth-child(2) {
+  margin-left: clamp(2rem, 8vw, 7rem);
+}
+
+.hero-banner__aside {
+  align-self: flex-end;
+  max-width: 360px;
+  margin-top: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.hero-banner__intro {
+  font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+  line-height: 1.7;
+  color: var(--text-muted);
+  margin-bottom: 1.75rem;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.8s var(--ease) 0.7s, transform 0.8s var(--ease) 0.7s;
+}
+
+.hero-banner__frame.is-loaded .hero-banner__intro {
+  opacity: 1;
+  transform: none;
 }
 
 .hero-banner__actions {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   flex-wrap: wrap;
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.8s var(--ease) 1s;
+  transform: translateY(16px);
+  transition: opacity 0.8s var(--ease) 0.85s, transform 0.8s var(--ease) 0.85s;
 }
 
-.hero-banner__content--loaded .hero-banner__actions {
+.hero-banner__frame.is-loaded .hero-banner__actions {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 .hero-banner__btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   padding: 0.85rem 1.6rem;
   border-radius: 100px;
   transition: all 0.3s var(--ease);
-  backdrop-filter: blur(8px);
 }
 
 .hero-banner__btn--primary {
@@ -206,12 +281,14 @@
 
 .hero-banner__btn--primary:hover {
   background: var(--accent);
+  color: #fff;
   transform: translateY(-2px);
 }
 
 .hero-banner__btn--ghost {
-  border: 1px solid rgba(26, 26, 26, 0.2);
-  background: rgba(245, 240, 232, 0.5);
+  border: 1px solid var(--border);
+  color: var(--text);
+  backdrop-filter: blur(8px);
 }
 
 .hero-banner__btn--ghost:hover {
@@ -219,49 +296,93 @@
   transform: translateY(-2px);
 }
 
-.hero-banner__scroll {
+/* ── 회전 SCROLL 뱃지 ── */
+.hero-banner__badge {
   position: absolute;
   bottom: 2rem;
-  left: clamp(1.5rem, 4vw, 3rem);
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--text-muted);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 116px;
+  height: 116px;
+  display: grid;
+  place-items: center;
   opacity: 0;
-  transition: opacity 0.8s var(--ease) 1.4s;
+  transition: opacity 0.9s var(--ease) 1s;
 }
 
-.hero-banner__scroll--loaded {
+.hero-banner__frame.is-loaded .hero-banner__badge {
   opacity: clamp(0, calc(1 - var(--hp) * 3), 1);
 }
 
-.hero-banner__scroll-line {
-  width: 48px;
-  height: 1px;
-  background: var(--text-muted);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-banner__scroll-line::after {
-  content: '';
+.hero-banner__badge-ring {
   position: absolute;
   inset: 0;
-  background: var(--accent);
-  animation: scrollLine 2s ease-in-out infinite;
+  width: 100%;
+  height: 100%;
+  animation: badgeSpin 16s linear infinite;
+}
+
+.hero-banner__badge-text {
+  font-family: var(--display);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  fill: var(--text);
+}
+
+.hero-banner__badge-arrow {
+  color: var(--text);
+  animation: badgeArrow 2s ease-in-out infinite;
+}
+
+@keyframes badgeSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes badgeArrow {
+  0%, 100% { transform: translateY(-2px); opacity: 0.6; }
+  50% { transform: translateY(2px); opacity: 1; }
 }
 
 @media (max-width: 768px) {
   .hero-banner__overlay {
-    background:
-      linear-gradient(to bottom, rgba(245, 240, 232, 0.85) 0%, rgba(245, 240, 232, 0.35) 50%, rgba(245, 240, 232, 0.9) 100%);
+    background: linear-gradient(to bottom, rgba(10, 10, 11, 0.6) 0%, rgba(10, 10, 11, 0.35) 45%, rgba(10, 10, 11, 0.9) 100%);
   }
 
-  .hero-banner__scroll {
+  .hero-banner__line:nth-child(2) {
+    margin-left: clamp(1rem, 6vw, 3rem);
+  }
+
+  .hero-banner__aside {
+    align-self: flex-start;
+    max-width: 100%;
+  }
+
+  .hero-banner__corner {
     display: none;
+  }
+
+  .hero-banner__badge {
+    width: 92px;
+    height: 92px;
+    bottom: 1.25rem;
+    left: auto;
+    right: clamp(1.5rem, 4vw, 3rem);
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-banner__word {
+    transform: none;
+    opacity: 1;
+    transition: none;
+  }
+
+  .hero-banner__orb,
+  .hero-banner__badge-ring,
+  .hero-banner__badge-arrow {
+    animation: none;
   }
 }

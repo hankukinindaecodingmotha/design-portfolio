@@ -9,9 +9,9 @@
 }
 
 .nav--scrolled {
-  background: rgba(245, 240, 232, 0.85);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  background: rgba(10, 10, 11, 0.72);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .nav__inner {
@@ -25,9 +25,12 @@
 }
 
 .nav__logo {
-  font-family: var(--serif);
-  font-size: 1.35rem;
-  font-weight: 400;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-stretch: 112%;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   display: flex;
   align-items: center;
   gap: 0.25rem;

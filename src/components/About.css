@@ -14,12 +14,25 @@
 }
 
 .about__label {
-  display: block;
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(245, 240, 232, 0.5);
+  color: var(--text-muted);
   margin-bottom: 1rem;
+}
+
+.about__label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .about__title {
@@ -46,7 +59,7 @@
 .about__paragraph {
   font-size: clamp(1rem, 2vw, 1.15rem);
   line-height: 1.8;
-  color: rgba(245, 240, 232, 0.75);
+  color: rgba(244, 243, 241, 0.78);
   margin-bottom: 1.5rem;
 }
 
@@ -64,7 +77,7 @@
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(245, 240, 232, 0.4);
+  color: rgba(244, 243, 241, 0.45);
   margin-bottom: 1rem;
 }
 
@@ -100,7 +113,7 @@
 
 .about__marquee {
   margin-top: clamp(4rem, 8vw, 6rem);
-  border-top: 1px solid rgba(245, 240, 232, 0.1);
+  border-top: 1px solid rgba(244, 243, 241, 0.12);
   padding-top: 2rem;
   overflow: hidden;
 }
@@ -115,7 +128,7 @@
   font-family: var(--serif);
   font-size: clamp(2rem, 4vw, 3rem);
   font-style: italic;
-  color: rgba(245, 240, 232, 0.15);
+  color: rgba(244, 243, 241, 0.16);
   flex-shrink: 0;
 }
 

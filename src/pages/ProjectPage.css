@@ -126,7 +126,8 @@
   font-size: 0.85rem;
   color: var(--text-muted);
   padding: 1rem 1.25rem;
-  background: rgba(26, 26, 26, 0.04);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-soft);
   border-radius: 8px;
   line-height: 1.6;
 }

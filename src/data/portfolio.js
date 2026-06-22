@@ -15,8 +15,22 @@ export const profile = {
   ],
   services: ['Brand Identity', 'UI/UX Design', 'Editorial Design', 'Art Direction'],
   tools: ['Figma', 'Adobe CC', 'Blender', 'After Effects'],
-  // HLS 영상 배너 — public/videos/ 폴더에 .m3u8 및 세그먼트 파일을 함께 넣으세요
-  heroVideoUrl: '/videos/hero.m3u8',
+  // 히어로 헤드라인 — type: 'display'(와이드 그로테스크) / 'serif'(우아한 이탤릭)
+  hero: {
+    kicker: 'Creative\nVisual Designer',
+    headline: [
+      { text: 'VISUAL', type: 'display' },
+      { text: 'DESIGN', type: 'display' },
+      { text: 'that speaks', type: 'serif' },
+    ],
+    intro:
+      'Seoul 기반 비주얼 디자이너 — 감각과 구조가 만나는 곳에서 대담한 브랜드 시스템과 디지털 경험을 만듭니다.',
+  },
+  // HLS 영상 배너. 외부 CDN(예: Pinterest)은 CORS로 차단될 수 있으며,
+  // 그 경우 자동으로 다크 모션 폴백이 표시됩니다.
+  // 안정적인 운영을 원하면 public/videos/ 에 자체 호스팅 .m3u8 을 넣고 경로를 바꾸세요.
+  heroVideoUrl:
+    'https://v1.pinimg.com/videos/iht/hls/ea/af/2e/eaaf2e47033dca3123989d0e1a51fec0.m3u8',
   heroPoster: undefined,
 };
 

@@ -11,12 +11,25 @@
 }
 
 .contact__label {
-  display: block;
-  font-size: 0.8rem;
-  letter-spacing: 0.15em;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-family: var(--display);
+  font-weight: 600;
+  font-stretch: 112%;
+  font-size: 0.74rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--text-muted);
   margin-bottom: 1rem;
+}
+
+.contact__label::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 
 .contact__title {
@@ -119,7 +132,7 @@
 
 .contact__field input::placeholder,
 .contact__field textarea::placeholder {
-  color: rgba(107, 101, 96, 0.5);
+  color: rgba(244, 243, 241, 0.3);
 }
 
 .contact__submit {
