@@ -1,6 +1,6 @@
 export const profile = {
   name: '정태주',
-  nameHanja: '鄭泰柱',
+  nameHanja: '鄭太柱',
   role: 'Visual Designer',
   tagline: '감각과 구조가 만나는 곳에서\n브랜드의 이야기를 디자인합니다.',
   email: 'hello@example.com',
@@ -20,7 +20,7 @@ export const profile = {
   hero: {
     kicker: 'Creative\nVisual Designer',
     headline: [
-      { text: '鄭泰', type: 'hanja' },
+      { text: '鄭太', type: 'hanja' },
       { text: '柱', type: 'hanja-accent' },
     ],
     intro:

@@ -108,9 +108,10 @@ export default function HeroBanner({ loaded }) {
 
         <div className="hero-banner__content">
           <h1 className="hero-banner__title">
-            {headline.map((line, i) => (
-              <span key={i} className="hero-banner__line">
+            <span className="hero-banner__line">
+              {headline.map((line, i) => (
                 <span
+                  key={i}
                   className={
                     line.type === 'hanja'
                       ? 'hero-banner__word hanja'
@@ -124,8 +125,8 @@ export default function HeroBanner({ loaded }) {
                 >
                   {line.text}
                 </span>
-              </span>
-            ))}
+              ))}
+            </span>
           </h1>
 
           <div className="hero-banner__aside">
