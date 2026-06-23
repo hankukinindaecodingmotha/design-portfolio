@@ -370,14 +370,88 @@
   50% { transform: translateY(2px); opacity: 1; }
 }
 
+@media (max-width: 1024px) {
+  .hero-banner__word.hanja {
+    font-size: clamp(2.8rem, 10vw, 6.5rem);
+    letter-spacing: 0.05em;
+  }
+
+  .hero-banner--has-3d .hero-banner__overlay {
+    background:
+      linear-gradient(to right, rgba(10, 10, 11, 0.88) 0%, rgba(10, 10, 11, 0.45) 52%, rgba(10, 10, 11, 0.2) 100%),
+      linear-gradient(to bottom, rgba(10, 10, 11, 0.35) 0%, rgba(10, 10, 11, 0.75) 100%);
+  }
+
+  .hero-banner--has-3d .hero-banner__scene {
+    transform: translate(calc(var(--mx) * -4px), calc(var(--my) * -4px));
+  }
+}
+
 @media (max-width: 768px) {
   .hero-banner__overlay {
     background: linear-gradient(to bottom, rgba(10, 10, 11, 0.6) 0%, rgba(10, 10, 11, 0.35) 45%, rgba(10, 10, 11, 0.9) 100%);
   }
 
+  .hero-banner--has-3d .hero-banner__overlay {
+    background:
+      linear-gradient(to bottom, rgba(10, 10, 11, 0.15) 0%, rgba(10, 10, 11, 0.55) 42%, rgba(10, 10, 11, 0.94) 72%);
+  }
+
+  .hero-banner--has-3d .hero-banner__media {
+    transform: translateY(calc(var(--hp) * 8vh)) scale(calc(1 + var(--hp) * 0.05));
+  }
+
+  .hero-banner--has-3d .hero-banner__scene {
+    transform: none;
+    opacity: 0.92;
+  }
+
+  .hero-banner__frame {
+    padding-top: calc(var(--nav-height) + 1.5rem);
+    padding-bottom: 2rem;
+    justify-content: flex-end;
+  }
+
+  .hero-banner__kicker {
+    position: static;
+    margin-bottom: 1rem;
+    font-size: 0.72rem;
+  }
+
+  .hero-banner__content {
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+  }
+
+  .hero-banner__word.hanja {
+    font-size: clamp(2.25rem, 11.5vw, 3.4rem);
+    letter-spacing: 0.03em;
+  }
+
+  .hero-banner__line {
+    white-space: nowrap;
+  }
+
   .hero-banner__aside {
     align-self: flex-start;
     max-width: 100%;
+    margin-top: 1.25rem;
+  }
+
+  .hero-banner__intro {
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+  }
+
+  .hero-banner__actions {
+    gap: 0.65rem;
+  }
+
+  .hero-banner__btn {
+    font-size: 0.84rem;
+    padding: 0.8rem 1.35rem;
   }
 
   .hero-banner__corner {
@@ -391,6 +465,31 @@
     left: auto;
     right: clamp(1.5rem, 4vw, 3rem);
     transform: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-banner__frame {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .hero-banner__word.hanja {
+    font-size: clamp(2rem, 10.5vw, 2.75rem);
+  }
+
+  .hero-banner__actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hero-banner__btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .hero-banner__badge {
+    display: none;
   }
 }
 

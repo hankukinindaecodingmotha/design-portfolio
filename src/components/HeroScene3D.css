@@ -11,3 +11,29 @@
   display: block;
   touch-action: pan-y;
 }
+
+@media (max-width: 1024px) {
+  .hero-scene-3d--tablet .hero-scene-3d__canvas,
+  .hero-scene-3d--mobile .hero-scene-3d__canvas {
+    object-position: center top;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-scene-3d--mobile {
+    inset: 0 0 auto 0;
+    height: min(56vh, 480px);
+    -webkit-mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 1) 0%,
+      rgba(0, 0, 0, 0.85) 55%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+}

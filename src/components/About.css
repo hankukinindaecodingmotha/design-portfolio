@@ -137,9 +137,23 @@
   100% { transform: translateX(-50%); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 980px) {
   .about__content {
     grid-template-columns: 1fr;
-    gap: 3rem;
+    gap: clamp(2.5rem, 6vw, 3.5rem);
+  }
+}
+
+@media (max-width: 520px) {
+  .about {
+    padding-top: clamp(4rem, 12vw, 5rem);
+  }
+
+  .about__details {
+    gap: 2rem;
+  }
+
+  .about__location {
+    font-size: 1.35rem;
   }
 }

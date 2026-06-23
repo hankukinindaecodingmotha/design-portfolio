@@ -40,6 +40,12 @@
   --radius: 18px;
 }
 
+@media (max-width: 768px) {
+  :root {
+    --nav-height: 64px;
+  }
+}
+
 /* 와이드 그로테스크 디스플레이 유틸 — 레퍼런스의 "WE ARE FULL-SERVICE" 톤 */
 .display {
   font-family: var(--display);

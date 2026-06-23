@@ -54,7 +54,10 @@ export default function HeroBanner({ loaded }) {
   const { kicker, headline, intro } = profile.hero;
 
   return (
-    <section className="hero-banner" ref={parallaxRef}>
+    <section
+      className={`hero-banner${use3d ? ' hero-banner--has-3d' : ''}`}
+      ref={parallaxRef}
+    >
       <div className="hero-banner__media">
         <HeroFallback className={use3d && mediaReady ? 'hero-banner__fallback--hidden' : ''} />
 

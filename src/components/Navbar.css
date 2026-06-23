@@ -127,6 +127,15 @@
 }
 
 @media (max-width: 768px) {
+  .nav__inner {
+    padding: 0 1.25rem;
+  }
+
+  .nav__logo--hanja {
+    font-size: 1.05rem;
+    letter-spacing: 0.1em;
+  }
+
   .nav__toggle {
     display: block;
   }

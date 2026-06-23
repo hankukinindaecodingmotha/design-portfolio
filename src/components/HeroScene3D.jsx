@@ -1,14 +1,58 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, useProgress } from '@react-three/drei';
 import * as THREE from 'three';
+import { useBreakpoint } from '../hooks/useBreakpoint';
 import './HeroScene3D.css';
+
+const SCENE_CONFIG = {
+  desktop: {
+    camera: [0, 0.1, 4.4],
+    fov: 48,
+    group: [0.85, 0, 0],
+    parallaxScale: 1,
+  },
+  tablet: {
+    camera: [0, 0.05, 5.2],
+    fov: 50,
+    group: [0.35, -0.08, 0],
+    parallaxScale: 0.72,
+  },
+  mobile: {
+    camera: [0, 0.15, 5.6],
+    fov: 54,
+    group: [0, -0.28, 0],
+    parallaxScale: 0.42,
+  },
+};
+
+const MOBILE_MODEL_FILES = new Set([
+  'Meshy_AI_Exploded_view_of_a_me_0604055323_texture.glb',
+  'swatch_logo.glb',
+]);
+
+const TABLET_SKIP_FILES = new Set([
+  'Meshy_AI_Watch_Middle_Gold_Gea_0604071552_image-to-3d-texture.glb',
+]);
 
 function resolveModelUrl(file) {
   return `${import.meta.env.BASE_URL}models/${file}`.replace(/([^:]\/)\/+/g, '$1');
 }
 
-function WatchPart({ url, scale, position, rotation, parallax, pointer, scrollBoost = 0 }) {
+function ResponsiveCamera({ breakpoint }) {
+  const { camera } = useThree();
+  const config = SCENE_CONFIG[breakpoint] ?? SCENE_CONFIG.desktop;
+
+  useEffect(() => {
+    camera.position.set(...config.camera);
+    camera.fov = config.fov;
+    camera.updateProjectionMatrix();
+  }, [breakpoint, camera, config]);
+
+  return null;
+}
+
+function WatchPart({ url, scale, position, rotation, parallax, pointer, scrollBoost = 0, parallaxScale = 1 }) {
   const { scene } = useGLTF(url);
   const group = useRef();
 
@@ -47,13 +91,13 @@ function WatchPart({ url, scale, position, rotation, parallax, pointer, scrollBo
     if (!group.current) return;
 
     const { x, y, progress } = pointer.current;
-    const rot = parallax?.rotate ?? 0.3;
-    const float = parallax?.float ?? 0.12;
+    const rot = (parallax?.rotate ?? 0.3) * parallaxScale;
+    const float = (parallax?.float ?? 0.12) * parallaxScale;
 
     targetRot.current.y = baseRotation.y + x * rot;
     targetRot.current.x = baseRotation.x + y * rot * 0.55;
     targetPos.current.x = basePosition.x + x * float;
-    targetPos.current.y = basePosition.y + y * float - progress * scrollBoost;
+    targetPos.current.y = basePosition.y + y * float - progress * scrollBoost * parallaxScale;
 
     group.current.rotation.x += (targetRot.current.x - group.current.rotation.x) * 0.07;
     group.current.rotation.y += (targetRot.current.y - group.current.rotation.y) * 0.07;
@@ -78,13 +122,26 @@ function LoadingBridge({ onReady }) {
   return null;
 }
 
-function Scene({ models, pointer, onReady }) {
+function Scene({ models, pointer, onReady, breakpoint }) {
+  const config = SCENE_CONFIG[breakpoint] ?? SCENE_CONFIG.desktop;
+
+  const activeModels = useMemo(() => {
+    if (breakpoint === 'mobile') {
+      return models.filter((model) => MOBILE_MODEL_FILES.has(model.file));
+    }
+    if (breakpoint === 'tablet') {
+      return models.filter((model) => !TABLET_SKIP_FILES.has(model.file));
+    }
+    return models;
+  }, [models, breakpoint]);
+
   useEffect(() => {
-    models.forEach((model) => useGLTF.preload(resolveModelUrl(model.file)));
-  }, [models]);
+    activeModels.forEach((model) => useGLTF.preload(resolveModelUrl(model.file)));
+  }, [activeModels]);
 
   return (
     <>
+      <ResponsiveCamera breakpoint={breakpoint} />
       <color attach="background" args={['#050506']} />
       <fog attach="fog" args={['#050506', 6, 14]} />
 
@@ -93,10 +150,10 @@ function Scene({ models, pointer, onReady }) {
       <directionalLight position={[-5, 2, -3]} intensity={0.75} color="#3d7fff" />
       <pointLight position={[2, 1, 3]} intensity={1.1} color="#ffd9a0" distance={10} />
 
-      <group position={[0.85, 0, 0]}>
+      <group position={config.group}>
         <Suspense fallback={null}>
           <LoadingBridge onReady={onReady} />
-          {models.map((model) => (
+          {activeModels.map((model) => (
             <WatchPart
               key={model.file}
               url={resolveModelUrl(model.file)}
@@ -106,6 +163,7 @@ function Scene({ models, pointer, onReady }) {
               parallax={model.parallax}
               scrollBoost={model.scrollBoost ?? 0.35}
               pointer={pointer}
+              parallaxScale={config.parallaxScale}
             />
           ))}
         </Suspense>
@@ -115,17 +173,19 @@ function Scene({ models, pointer, onReady }) {
 }
 
 export default function HeroScene3D({ models, pointer, onReady }) {
+  const breakpoint = useBreakpoint();
   const isCoarse =
     typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches;
+  const config = SCENE_CONFIG[breakpoint] ?? SCENE_CONFIG.desktop;
 
   return (
-    <div className="hero-scene-3d">
+    <div className={`hero-scene-3d hero-scene-3d--${breakpoint}`}>
       <Canvas
         className="hero-scene-3d__canvas"
-        camera={{ position: [0, 0.1, 4.4], fov: 48, near: 0.1, far: 100 }}
-        dpr={isCoarse ? [1, 1.25] : [1, 1.75]}
+        camera={{ position: config.camera, fov: config.fov, near: 0.1, far: 100 }}
+        dpr={isCoarse ? [1, 1.15] : breakpoint === 'mobile' ? [1, 1.25] : [1, 1.75]}
         gl={{
-          antialias: true,
+          antialias: breakpoint !== 'mobile',
           alpha: true,
           powerPreference: 'high-performance',
         }}
@@ -135,7 +195,7 @@ export default function HeroScene3D({ models, pointer, onReady }) {
           gl.setClearColor(0x050506, 0);
         }}
       >
-        <Scene models={models} pointer={pointer} onReady={onReady} />
+        <Scene models={models} pointer={pointer} onReady={onReady} breakpoint={breakpoint} />
       </Canvas>
     </div>
   );

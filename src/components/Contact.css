@@ -154,8 +154,21 @@
   transform: translateY(-2px);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   .contact__body {
     grid-template-columns: 1fr;
+    gap: clamp(2.5rem, 6vw, 3.5rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .contact__email {
+    font-size: clamp(1.25rem, 5.5vw, 1.75rem);
+    word-break: break-all;
+  }
+
+  .contact__submit {
+    width: 100%;
+    justify-content: center;
   }
 }

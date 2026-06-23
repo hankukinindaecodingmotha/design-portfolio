@@ -86,17 +86,35 @@ export function useParallax() {
       if (!mouseFrame) mouseFrame = requestAnimationFrame(animateMouse);
     };
 
+    const onTouchMove = (e) => {
+      const touch = e.touches[0];
+      if (!touch) return;
+      const rect = el.getBoundingClientRect();
+      targetMx = ((touch.clientX - rect.left) / rect.width - 0.5) * 2;
+      targetMy = ((touch.clientY - rect.top) / rect.height - 0.5) * 2;
+      mouseActive = true;
+      if (!mouseFrame) mouseFrame = requestAnimationFrame(animateMouse);
+    };
+
+    const onTouchEnd = () => onMouseLeave();
+
     setScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onScroll, { passive: true });
     el.addEventListener('mousemove', onMouseMove);
     el.addEventListener('mouseleave', onMouseLeave);
+    el.addEventListener('touchmove', onTouchMove, { passive: true });
+    el.addEventListener('touchend', onTouchEnd);
+    el.addEventListener('touchcancel', onTouchEnd);
 
     return () => {
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
       el.removeEventListener('mousemove', onMouseMove);
       el.removeEventListener('mouseleave', onMouseLeave);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
       if (frame) cancelAnimationFrame(frame);
       if (mouseFrame) cancelAnimationFrame(mouseFrame);
     };
