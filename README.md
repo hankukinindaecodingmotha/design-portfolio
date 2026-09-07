@@ -2,9 +2,19 @@
 
 디자이너 포트폴리오 사이트 (React + Vite).
 
+## 구조
+
+```
+src/                 # 포트폴리오 사이트
+public/models/       # 히어로 3D (GLB)
+works/               # 작품 소스 (사이트와 분리)
+  hand-motion/       # 인터랙티브 손 모션 데모
+  hteng-website/     # HTeng 기업 웹 프로젝트
+```
+
 ## 페이지
 
-- `/`: HLS 영상 배너 + 대표 작업 + About + Contact
+- `/`: 3D 히어로 + 대표 작업 + About + Contact
 - `/work`: 전체 프로젝트 아카이브 (필터)
 - `/work/:slug`: 프로젝트 상세
 
@@ -15,15 +25,9 @@ npm install
 npm run dev
 ```
 
-## 영상 배너 (HLS)
+## 작품 데이터
 
-`public/videos/` 폴더에 `.m3u8` 파일과 함께 세그먼트 파일(`.ts`, 하위 `.m3u8`)을 모두 넣으세요.
-
-`src/data/portfolio.js`의 `heroVideoUrl`로 경로를 지정할 수 있습니다.
-
-```js
-heroVideoUrl: '/videos/hero.m3u8',
-```
+`src/data/portfolio.js`에서 프로젝트 목록을 관리합니다. 실제 소스는 `works/` 아래입니다.
 
 ## 빌드
 

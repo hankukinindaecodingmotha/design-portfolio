@@ -1,0 +1,16 @@
+[
+  {
+    "id": "admin",
+    "username": "admin",
+    "displayName": "시스템 관리자",
+    "passwordHash": "REPLACE_WITH_BCRYPT_HASH",
+    "role": "admin",
+    "status": "active",
+    "email": "admin@example.com",
+    "joinDate": "2025-01-01",
+    "lastLogin": null,
+    "loginAttempts": 0,
+    "lockedUntil": null,
+    "permissions": ["read", "write", "delete", "admin"]
+  }
+]

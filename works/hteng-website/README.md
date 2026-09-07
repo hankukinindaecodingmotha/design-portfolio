@@ -19,19 +19,13 @@ HTeng은 전기·전자 부품 유통 및 기술 지원 서비스를 제공하�
 
 ## 프로젝트 구조
 ```
-HT_Eng_Project/
+works/hteng-website/
 ├── Server/                 # 백엔드 서버
-│   ├── server.js          # 메인 서버 파일
-│   ├── config.js          # 서버 설정
-│   └── package.json       # 의존성 관리
-├── Web_UI/                # 프론트엔드
-│   ├── Admin/             # 관리자 페이지
-│   ├── Components/        # 공통 컴포넌트
-│   ├── HomePage/          # 메인 페이지
-│   ├── Product/           # 제품 페이지
-│   └── ...                # 기타 페이지들
-├── Resource/              # 데이터 파일
-└── App_UI/                # 모바일 앱 UI
+├── Web_UI/                 # 프론트엔드
+├── Resource/               # 데이터 파일
+├── App_UI/                 # 모바일 앱 UI
+├── data/                   # 사용자 샘플 (실서비스 비밀번호 넣지 말 것)
+└── vercel.json
 ```
 
 ## 🚀 최적화 및 개선 방안

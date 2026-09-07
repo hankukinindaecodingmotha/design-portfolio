@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Xcode / junk
+**/xcuserdata/
+*.xcuserstate
+**/_to_delete/
+
+# Nested work dependencies
+works/**/node_modules/

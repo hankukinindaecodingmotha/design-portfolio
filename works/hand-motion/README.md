@@ -10,7 +10,7 @@
    ```bash
    git checkout cursor/hand-motion-mac-demo-3d01
    ```
-2. Finder에서 `hand-motion` 폴더 열기
+2. Finder에서 `works/hand-motion` 폴더 열기
 3. **`run-performer.command`** 더블클릭
    - 처음 실행 시 Python 패키지·AI 모델 자동 설치 (1~2분)
    - **별도 창**이 뜨며 손 인식 + 비주얼 시작
@@ -21,7 +21,7 @@
 ### 방법 B — 터미널 한 줄
 
 ```bash
-cd hand-motion
+cd works/hand-motion
 ./run-performer.sh
 ```
 

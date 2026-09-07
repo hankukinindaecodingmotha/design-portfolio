@@ -75,10 +75,16 @@ export default function ProjectPage() {
 
           <div className="project-page__content">
             <p className="project-page__long">{project.longDescription}</p>
-            <p className="project-page__note">
-              실제 프로젝트 이미지는 `src/data/portfolio.js`에서 추가하거나,
-              Behance·Figma 링크를 연결할 수 있습니다.
-            </p>
+            {project.sourcePath && (
+              <p className="project-page__note">
+                소스: <code>{project.sourcePath}</code>
+                {project.demoPath ? (
+                  <>
+                    {' · '}데모: <code>{project.demoPath}</code>
+                  </>
+                ) : null}
+              </p>
+            )}
           </div>
         </div>
 
