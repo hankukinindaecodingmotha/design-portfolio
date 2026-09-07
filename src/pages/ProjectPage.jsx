@@ -1,5 +1,5 @@
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { getProjectBySlug, projects } from '../data/portfolio';
+import { getProjectBySlug, projects, resolveLiveUrl } from '../data/portfolio';
 import { useReveal } from '../hooks/useReveal';
 import './ProjectPage.css';
 
@@ -13,6 +13,7 @@ export default function ProjectPage() {
     return <Navigate to="/work" replace />;
   }
 
+  const liveHref = resolveLiveUrl(project.liveUrl);
   const related = projects
     .filter((p) => p.category === project.category && p.id !== project.id)
     .slice(0, 2);
@@ -45,6 +46,25 @@ export default function ProjectPage() {
           </div>
           <h1 className="project-page__title">{project.title}</h1>
           <p className="project-page__summary">{project.description}</p>
+          {liveHref && (
+            <a
+              className="project-page__live"
+              href={liveHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {project.liveLabel || 'Open project'}
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path
+                  d="M4 12L12 4M12 4H6M12 4v6"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </a>
+          )}
         </header>
 
         <div ref={contentRef} className="project-page__grid reveal reveal-delay-2">
@@ -61,6 +81,18 @@ export default function ProjectPage() {
               <h2>Year</h2>
               <p>{project.year}</p>
             </div>
+            {liveHref && (
+              <div className="project-page__detail">
+                <h2>Live</h2>
+                <p>
+                  <a href={liveHref} target="_blank" rel="noopener noreferrer">
+                    {/^https?:\/\//i.test(project.liveUrl)
+                      ? project.liveUrl.replace(/^https?:\/\//i, '')
+                      : project.liveLabel || 'Open demo'}
+                  </a>
+                </p>
+              </div>
+            )}
             {project.tags && (
               <div className="project-page__detail">
                 <h2>Tags</h2>
@@ -75,16 +107,6 @@ export default function ProjectPage() {
 
           <div className="project-page__content">
             <p className="project-page__long">{project.longDescription}</p>
-            {project.sourcePath && (
-              <p className="project-page__note">
-                소스: <code>{project.sourcePath}</code>
-                {project.demoPath ? (
-                  <>
-                    {' · '}데모: <code>{project.demoPath}</code>
-                  </>
-                ) : null}
-              </p>
-            )}
           </div>
         </div>
 

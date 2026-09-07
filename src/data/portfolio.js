@@ -101,7 +101,8 @@ export const projects = [
     client: 'Personal',
     role: 'Designer / Developer',
     sourcePath: 'works/hand-motion',
-    demoPath: 'works/hand-motion/web',
+    liveUrl: 'demos/hand-motion/',
+    liveLabel: 'Live Demo',
   },
   {
     id: 2,
@@ -119,8 +120,18 @@ export const projects = [
     client: 'HTeng',
     role: 'UI/UX Designer',
     sourcePath: 'works/hteng-website',
+    liveUrl: 'http://hteng.co.kr',
+    liveLabel: 'Visit hteng.co.kr',
   },
 ];
+
+/** Absolute http(s) URL 그대로, 상대 경로는 Vite BASE_URL 기준 */
+export function resolveLiveUrl(url) {
+  if (!url) return null;
+  if (/^https?:\/\//i.test(url)) return url;
+  const base = import.meta.env.BASE_URL || '/';
+  return `${base}${url.replace(/^\//, '')}`;
+}
 
 export function getProjectBySlug(slug) {
   return projects.find((p) => p.slug === slug);
