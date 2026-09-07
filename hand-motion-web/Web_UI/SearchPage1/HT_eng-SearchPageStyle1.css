@@ -1,0 +1,983 @@
+/* 
+  body 전체 스타일 설정
+  - 기본 여백(margin)과 패딩 제거하여 화면 꽉 채움
+  - 배경색 흰색으로 설정
+  - 기본 글꼴은 Arial, sans-serif 계열
+  - 최소 높이 100vh로 설정하여 화면 꽉 채우기
+  - 검색 결과가 많을 때 스크롤 가능하도록 수정
+*/
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #ffffff;
+  /* 배경 흰색 */
+  font-family: 'Arial', sans-serif;
+  min-height: 100vh;
+  /* 최소 높이 설정 */
+}
+
+/* 
+  .container 클래스: 메인 컨텐츠 박스 스타일
+  - 최대 너비 900px, 화면 크기에 따라 90% 너비로 조정
+  - 배경색 흰색
+  - 내부 여백 60px로 넉넉하게 설정
+  - 박스 크기 계산 시 패딩 포함 (box-sizing)
+  - 검색바 고정을 위해 중앙 정렬 설정
+  - 검색 결과가 많을 때 스크롤 가능하도록 수정
+*/
+.container {
+  max-width: 900px;
+  width: 90%;
+  background: white;
+  padding: 60px;
+  box-sizing: border-box;
+  /* 패딩 포함 너비 계산 */
+  margin: 0 auto;
+  /* 중앙 정렬 */
+  min-height: 100vh;
+  /* 최소 높이 설정 */
+}
+
+/* 
+  상단바 스타일 .top-bar
+  - flex 박스로 내부 아이템을 좌우 양 끝에 배치
+  - 세로 중앙 정렬
+*/
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  /* 좌우 끝 정렬 */
+  align-items: center;
+  /* 세로 중앙 정렬 */
+}
+
+/* 
+  .full-button 클래스 (상단 우측 버튼)
+  - 패딩으로 클릭 영역 확보
+  - 연한 회색 배경 (#ddd)
+  - 테두리 제거 (border: none)
+  - 기본 글꼴 크기 1rem
+  - 마우스 커서가 손가락 모양으로 변경 (클릭 가능 표시)
+  - 아이콘 크기 조절을 위해 flex로 가운데 정렬
+  - 버튼 크기 조절 (필요시 변경 가능)
+*/
+.full-button {
+  padding: 10px 16px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #333;
+  background: none;
+}
+
+/* 홈 아이콘 크기 조절 */
+.full-button i {
+  font-size: 1.2rem;
+  vertical-align: middle;
+}
+
+/* 
+  .logo 영역: 로고 이미지가 들어가는 컨테이너
+  - flex 박스로 내부 아이템 가로/세로 중앙 정렬
+  - 위쪽 마진 40px로 위치 조절
+*/
+.logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 40px;
+}
+
+/* 
+  .logo 내 img 태그 스타일
+  - 높이 60px로 고정
+  - 너비는 자동으로 비율 유지하며 조정
+  - 이미지 비율을 유지하면서 영역에 맞게 맞춤 (object-fit)
+*/
+.logo img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  /* 이미지 비율 유지하며 영역에 맞춤 */
+}
+
+/* 
+  .search-box: 검색창 박스 스타일
+  - flex 박스로 가로 정렬 및 가운데 정렬
+  - 위쪽 마진 40px, 좌우 자동 마진으로 수평 중앙 배치
+  - 너비 80%, 최대 너비 600px 제한
+  - 하단에 2px 회색 선 (border-bottom)으로 구분선 생성
+  - 아래쪽 패딩 14px로 내용과 선 사이 여백 확보
+  - position: relative로 내부에 절대위치 요소 사용 가능하게 함
+*/
+.search-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 40px auto 0;
+  width: 80%;
+  max-width: 600px;
+  border-bottom: 2px solid #888;
+  padding-bottom: 14px;
+  position: relative;
+  /* 자식 요소 위치 기준 */
+}
+
+/* 
+  .search-box 내 아이콘 (돋보기) 스타일
+  - 글꼴 아이콘 크기 26px
+  - 회색 색상
+  - 오른쪽에 12px 여백 추가
+*/
+.search-box i {
+  font-size: 26px;
+  color: gray;
+  margin-right: 12px;
+}
+
+/* 
+  검색 input 스타일
+  - 테두리 제거 (border:none)
+  - 너비 100%로 박스 꽉 채움
+  - 글자 크기 1.2rem로 키움
+  - 텍스트 색상 짙은 회색(#333)
+  - 포커스 시 기본 아웃라인 제거 (outline:none)
+*/
+.search-box input {
+  border: none;
+  width: 100%;
+  font-size: 1.2rem;
+  color: #333;
+  outline: none;
+}
+
+/* 검색 버튼 스타일 */
+.search-btn {
+  background: #03c75a;
+  border: none;
+  border-radius: 50%;
+  width: 45px;
+  height: 45px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+  margin-left: 10px;
+}
+
+.search-btn:hover {
+  background: #02b351;
+  transform: scale(1.05);
+}
+
+.search-btn i {
+  font-size: 18px;
+}
+
+/* 
+  #suggestions : 연관검색어 박스
+  - 검색창 바로 아래에 위치하도록 절대 위치 지정
+  - 좌우는 부모에 맞게 0으로 늘림
+  - 흰 배경, 연한 회색 테두리
+  - 최대 높이 180px, 내용 넘치면 스크롤
+  - z-index 10으로 최근검색어 박스보다 위에 표시
+  - 기본은 숨김 (display:none)
+*/
+#suggestions {
+  position: absolute;
+  top: 100%;
+  /* 부모(검색창) 바로 아래 */
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 180px;
+  overflow-y: auto;
+  /* 넘칠 때 세로 스크롤 */
+  z-index: 10;
+  /* 최근검색어보다 위에 표시 */
+  display: none;
+  /* 기본 숨김 */
+}
+
+/* 
+  #suggestions 내 각 항목 div 스타일
+  - 안쪽 여백 8px 12px
+  - 마우스 커서 포인터로 변경 (클릭 가능 표시)
+*/
+#suggestions div {
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* 
+  마우스 오버 시 배경 연한 회색으로 변경
+*/
+#suggestions div:hover {
+  background-color: #eee;
+}
+
+/* 
+  #recentSearches : 최근검색어 박스 (위치와 기본 스타일 #suggestions와 동일)
+  - z-index는 9로 연관검색어 박스보다 아래
+  - 기본 숨김
+*/
+#recentSearches {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  max-height: 180px;
+  overflow-y: auto;
+  z-index: 9;
+  display: none;
+}
+
+/* 
+  최근검색어 리스트 각 항목 li 스타일
+  - 패딩 8px 12px
+  - 마우스 커서 포인터로 변경
+  - 기본 리스트 점 스타일 제거 (list-style:none)
+*/
+#recentList li {
+  padding: 8px 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+/* 
+  최근검색어 항목 마우스 오버 시 배경 연한 회색 변경
+*/
+#recentList li:hover {
+  background-color: #eee;
+}
+
+/* 서버 검색 결과 영역 */
+.server-result-container {
+  margin-top: 20px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  display: none;
+  /* 검색 결과가 많을 때 스크롤 가능하도록 최대 높이 설정 */
+  max-height: calc(100vh - 400px);
+  overflow-y: auto;
+  /* 너비를 더 넓게 설정하여 8열 모드에서도 여유롭게 배치 */
+  width: 100%;
+  max-width: 95vw;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.server-result-container.show {
+  display: block;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.result-header h3 {
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* 뷰 토글 버튼 */
+.view-toggle {
+  display: flex;
+  gap: 10px;
+}
+
+.view-btn {
+  padding: 8px 16px;
+  border: 2px solid #e0e0e0;
+  background: white;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  transition: all 0.3s ease;
+}
+
+.view-btn:hover {
+  border-color: #03c75a;
+  color: #03c75a;
+}
+
+.view-btn.active {
+  background: #03c75a;
+  border-color: #03c75a;
+  color: white;
+}
+
+/* 결과 그리드 */
+.result-grid {
+  display: grid;
+  gap: 20px;
+  transition: all 0.3s ease;
+  /* 검색 결과가 많을 때 스크롤 가능하도록 설정 */
+  max-height: calc(100vh - 500px);
+  overflow-y: auto;
+  /* 그리드가 컨테이너 너비를 최대한 활용하도록 */
+  width: 100%;
+}
+
+.result-grid.grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  /* 4열 모드에서 적절한 간격 */
+}
+
+.result-grid.grid-8 {
+  grid-template-columns: repeat(8, 1fr);
+  gap: 20px;
+  /* 8열 모드에서도 4열과 동일한 간격 유지 */
+}
+
+/* 8열 모드에서도 제품 카드 크기를 4열과 동일하게 유지 */
+.result-grid.grid-8 .product-card {
+  /* 4열과 동일한 크기 유지 */
+}
+
+/* 제품 카드 */
+.product-card {
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 0;
+  /* 그리드 아이템이 좁아질 때 내용이 넘치지 않도록 */
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.product-image {
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 48px;
+  font-weight: bold;
+}
+
+/* 8열 모드에서도 이미지 크기를 4열과 동일하게 유지 */
+.result-grid.grid-8 .product-image {
+  /* 4열과 동일한 크기 유지 */
+}
+
+/* 제품 카드 내부 정보 영역 */
+.product-info {
+  flex: 1;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 제품명 */
+.product-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* 제품 설명 */
+.product-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+/* 제품 상세 정보 태그들 */
+.product-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.detail-tag {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-tag.protection {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border: 1px solid #bbdefb;
+}
+
+.detail-tag.group {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  border: 1px solid #e1bee7;
+}
+
+.detail-tag.communication {
+  background-color: #e8f5e8;
+  color: #388e3c;
+  border: 1px solid #c8e6c9;
+}
+
+.detail-tag.zct {
+  background-color: #fff3e0;
+  color: #f57c00;
+  border: 1px solid #ffcc02;
+}
+
+/* 액션 버튼 영역 */
+.product-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: auto;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* 구매 버튼 */
+.action-btn.purchase {
+  background-color: #4caf50;
+  color: white;
+}
+
+.action-btn.purchase:hover {
+  background-color: #45a049;
+}
+
+/* 카탈로그 버튼 */
+.action-btn.catalog {
+  background-color: #2196f3;
+  color: white;
+}
+
+.action-btn.catalog:hover {
+  background-color: #1976d2;
+}
+
+/* 연락처 버튼 */
+.action-btn.contact {
+  background-color: #ff9800;
+  color: white;
+}
+
+.action-btn.contact:hover {
+  background-color: #f57c00;
+}
+
+/* 제품 상세 모달 */
+.product-modal {
+  display: none;
+  position: fixed;
+  z-index: 10000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+}
+
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 30px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.modal-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.close-modal {
+  background: none;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-modal:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.modal-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.modal-image {
+  text-align: center;
+}
+
+.modal-image-placeholder {
+  width: 100%;
+  height: 300px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 72px;
+  font-weight: bold;
+}
+
+.modal-specs {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.spec-group {
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 15px;
+  background: #f9f9f9;
+}
+
+.spec-title {
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.spec-value {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 모달 액션 버튼 */
+.modal-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  padding: 20px;
+  border-top: 1px solid #eee;
+}
+
+.modal-action-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 120px;
+  justify-content: center;
+}
+
+.modal-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 카탈로그 버튼 */
+.modal-action-btn.catalog {
+  background-color: #2196f3;
+  color: white;
+}
+
+.modal-action-btn.catalog:hover {
+  background-color: #1976d2;
+}
+
+/* 구매 버튼 */
+.modal-action-btn.purchase {
+  background-color: #4caf50;
+  color: white;
+}
+
+.modal-action-btn.purchase:hover {
+  background-color: #45a049;
+}
+
+/* 연락처 버튼 */
+.modal-action-btn.contact {
+  background-color: #ff9800;
+  color: white;
+}
+
+.modal-action-btn.contact:hover {
+  background-color: #f57c00;
+}
+
+/* 반응형 모달 */
+@media (max-width: 768px) {
+  .modal-content {
+    margin: 10% auto;
+    padding: 20px;
+    width: 95%;
+  }
+
+  .modal-body {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .modal-image-placeholder {
+    height: 200px;
+    font-size: 48px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* 8열 모드에서도 설명 스타일을 4열과 동일하게 유지 */
+.result-grid.grid-8 .product-description {
+  /* 4열과 동일한 스타일 유지 */
+}
+
+/* 검색 결과 없음 */
+.no-results {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+  font-size: 16px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 2000px) {
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(8, 1fr);
+  }
+}
+
+@media (max-width: 1800px) {
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(7, 1fr);
+  }
+}
+
+@media (max-width: 1400px) {
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 1200px) {
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+@media (max-width: 992px) {
+  .result-grid.grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin: 10px;
+    padding: 20px;
+  }
+
+  .result-grid.grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .result-grid.grid-8 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .result-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+
+  /* 모바일에서 검색 결과 영역 높이 조정 */
+  .server-result-container {
+    max-height: calc(100vh - 300px);
+  }
+
+  .result-grid {
+    max-height: calc(100vh - 400px);
+  }
+}
+
+@media (max-width: 480px) {
+
+  .result-grid.grid-4,
+  .result-grid.grid-8 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 검색 영역을 아래로 내리기 */
+.center-content {
+  padding-top: 100px;
+  /* 필요에 따라 수치 조정 */
+}
+
+/* 모바일에서 간격 조정 */
+@media (max-width: 768px) {
+  .center-content {
+    padding-top: 70px;
+  }
+}
+
+/* ===== 필터 UI 추가 스타일 ===== */
+.filter-toggle {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 18px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  color: #333;
+}
+
+.filter-area {
+  margin-top: 14px;
+  display: none;
+}
+
+.filter-area.expanded {
+  display: block;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.filter-label {
+  min-width: 110px;
+  color: #333;
+  font-weight: 600;
+}
+
+.filter-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-btn {
+  padding: 6px 12px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #333;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  border-color: #03c75a;
+  color: #03c75a;
+}
+
+.filter-btn.active {
+  background: #03c75a;
+  border-color: #03c75a;
+  color: #fff;
+}
+
+/* 초기화 버튼 */
+.reset-area {
+  display: none;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.reset-btn {
+  padding: 8px 16px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+  color: #333;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.reset-btn:hover {
+  border-color: #03c75a;
+  color: #03c75a;
+}
+
+/* 연락처 모달 */
+.contact-modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.contact-modal .modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  padding: 0;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.3s ease-out;
+}
+
+.contact-modal .modal-header {
+  background: linear-gradient(135deg, #ff9800, #f57c00);
+  color: white;
+  padding: 20px;
+  border-radius: 15px 15px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.contact-modal .modal-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.contact-modal .modal-body {
+  padding: 30px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #ff9800;
+}
+
+.contact-item i {
+  font-size: 24px;
+  color: #ff9800;
+  margin-top: 5px;
+}
+
+.contact-details h3 {
+  margin: 0 0 10px 0;
+  color: #333;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.contact-details p {
+  margin: 5px 0;
+  color: #666;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.contact-details p:first-of-type {
+  color: #ff9800;
+  font-weight: 600;
+  font-size: 18px;
+}

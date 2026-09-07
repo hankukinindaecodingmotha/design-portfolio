@@ -1,0 +1,8 @@
+/* 공용 푸터: 홈 페이지 형식(간단한 3줄)과 동일하게 적용 */
+.footer {
+    background: #222;
+    color: #fff;
+    padding: 30px 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}

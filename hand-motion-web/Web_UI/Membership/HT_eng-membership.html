@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>멤버쉽 문의 - HTeng</title>
+  <link rel="stylesheet" href="HT_eng-membership.css" />
+  <link rel="stylesheet" href="../Components/Header/HT_eng-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>body{padding-top:100px}</style>
+</head>
+<body>
+  <div id="header-container"></div>
+  
+  <main class="membership-wrap">
+    <div class="membership-hero">
+      <h1>멤버쉽 문의</h1>
+      <p>HTeng과 함께 성장하세요</p>
+    </div>
+    
+    <section class="membership-info">
+      <h2>멤버쉽 혜택</h2>
+      <div class="benefits">
+        <div class="benefit">
+          <i class="fas fa-headset"></i>
+          <h3>전문 기술 지원</h3>
+          <p>24/7 전문 기술자 지원</p>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-book"></i>
+          <h3>교육 프로그램</h3>
+          <p>정기 기술 교육 및 워크샵</p>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-tools"></i>
+          <h3>유지보수</h3>
+          <p>정기 점검 및 예방 정비</p>
+        </div>
+        <div class="benefit">
+          <i class="fas fa-percentage"></i>
+          <h3>할인 혜택</h3>
+          <p>제품 구매 시 특별 할인</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-form">
+      <h2>문의하기</h2>
+      <form id="membershipForm">
+        <div class="form-group">
+          <label for="company">회사명 *</label>
+          <input type="text" id="company" name="company" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="name">담당자명 *</label>
+          <input type="text" id="name" name="name" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="email">이메일 *</label>
+          <input type="email" id="email" name="email" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="phone">연락처</label>
+          <input type="tel" id="phone" name="phone">
+        </div>
+        
+        <div class="form-group">
+          <label for="interest">관심 분야</label>
+          <select id="interest" name="interest">
+            <option value="">선택해주세요</option>
+            <option value="eocr">EOCR</option>
+            <option value="automation">자동화</option>
+            <option value="maintenance">유지보수</option>
+            <option value="education">교육</option>
+            <option value="other">기타</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="message">문의 내용 *</label>
+          <textarea id="message" name="message" rows="5" required placeholder="구체적인 문의사항을 작성해주세요."></textarea>
+        </div>
+        
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-paper-plane"></i>
+          문의하기
+        </button>
+      </form>
+    </section>
+  </main>
+
+  <!-- 푸터 -->
+  <div id="footer-container"></div>
+
+  <script defer src="../Components/Header/HT_eng-header.js"></script>
+  <script defer src="../Components/Footer/HT_eng-footer.js"></script>
+  <script>
+    document.getElementById('membershipForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      alert('문의가 접수되었습니다. 빠른 시일 내에 연락드리겠습니다.');
+      this.reset();
+    });
+  </script>
+</body>
+</html>

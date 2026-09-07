@@ -1,0 +1,164 @@
+/* 전체 요소 초기화 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* 기본 설정 */
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #f9f9f9;
+    padding: 0;
+    overflow-y: auto;
+}
+
+/* 컨테이너 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* 회사 구성원 페이지 메인 */
+.members-page {
+    margin-top: 100px;
+    padding: 40px 0;
+    min-height: 100vh;
+    overflow: visible;
+}
+
+/* 페이지 헤더 */
+.page-header {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.page-header h1 {
+    font-size: 2.5rem;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.page-header p {
+    font-size: 1.2rem;
+    color: #666;
+    margin: 0;
+}
+
+/* 구성원 목록 */
+.employee-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+/* 구성원 카드 */
+.employee-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+/* 구성원 이미지 */
+.employee-image {
+    flex: 0 0 250px;
+}
+
+.employee-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+/* 구성원 정보 */
+.employee-info {
+    flex: 1;
+}
+
+.employee-name {
+    font-size: 1.8rem;
+    color: #333;
+    margin: 0 0 10px 0;
+    border-bottom: 3px solid #4caf50;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.employee-position {
+    font-size: 1.2rem;
+    color: #666;
+    margin: 5px 0;
+    font-weight: 500;
+}
+
+.employee-department {
+    font-size: 1.1rem;
+    color: #777;
+    margin: 5px 0;
+}
+
+.employee-experience {
+    font-size: 1rem;
+    color: #888;
+    margin: 5px 0;
+}
+
+.employee-email {
+    font-size: 1rem;
+    color: #4caf50;
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.employee-description {
+    font-size: 1rem;
+    color: #555;
+    line-height: 1.6;
+    margin: 15px 0 0 0;
+}
+
+/* 로딩 및 에러 메시지 */
+.loading-message,
+.no-members-message {
+    text-align: center;
+    padding: 50px;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.loading-message i {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #4caf50;
+}
+
+.no-members-message i {
+    font-size: 3rem;
+    margin-bottom: 20px;
+    color: #ccc;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .employee-card {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .employee-image {
+        flex: 0 0 auto;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+}

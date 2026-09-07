@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>관리자 로그인 - HTeng</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    /* ==================== CSS 초기화 및 기본 스타일 ==================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f5f5f5;
+    }
+
+    /* ==================== 로그인 페이지 레이아웃 ==================== */
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      position: relative;
+    }
+
+    .login-card {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    /* ==================== 로그인 헤더 ==================== */
+    .login-header {
+      margin-bottom: 30px;
+    }
+
+    .login-header h1 {
+      color: #333;
+      margin-bottom: 15px;
+      font-size: 2.2em;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .login-header h1 i {
+      color: #667eea;
+      font-size: 0.9em;
+    }
+
+    .login-header p {
+      color: #666;
+      font-size: 1.1em;
+      line-height: 1.5;
+    }
+
+    /* ==================== 폼 스타일 ==================== */
+    .login-form {
+      text-align: left;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333;
+      font-weight: 600;
+      font-size: 0.95em;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e1e5e9;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: #fafafa;
+      color: #333;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #667eea;
+      background: white;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group input::placeholder {
+      color: #999;
+    }
+
+    /* ==================== 로그인 버튼 ==================== */
+    .login-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .login-btn:active {
+      transform: translateY(0);
+    }
+
+    .login-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-text {
+      display: inline-block;
+    }
+
+    .loading {
+      display: none;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ==================== 에러 메시지 ==================== */
+    .error-message {
+      color: #d32f2f;
+      background: #ffebee;
+      border: 1px solid #ffcdd2;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      display: none;
+      font-size: 0.9em;
+      text-align: left;
+    }
+
+    .error-message.show {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ==================== 데모 계정 정보 ==================== */
+    .demo-account {
+      margin: 25px 0;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #667eea;
+      text-align: left;
+    }
+
+    .demo-account h4 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 1.1em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .demo-account h4 i {
+      color: #667eea;
+    }
+
+    .demo-account p {
+      margin: 0 0 8px 0;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    .demo-account p:last-child {
+      margin-bottom: 0;
+    }
+
+    .demo-account strong {
+      color: #333;
+      font-weight: 600;
+    }
+
+    /* ==================== 홈페이지 링크 ==================== */
+    .back-to-home {
+      margin-top: 25px;
+      text-align: center;
+    }
+
+    .back-to-home a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 10px 20px;
+      border-radius: 6px;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .back-to-home a:hover {
+      background: rgba(102, 126, 234, 0.1);
+      color: #5a6fd8;
+      transform: translateY(-1px);
+    }
+
+    /* ==================== 반응형 디자인 ==================== */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 30px 20px;
+        margin: 10px;
+      }
+
+      .login-header h1 {
+        font-size: 1.8em;
+      }
+
+      .form-group input {
+        padding: 12px 14px;
+      }
+
+      .login-btn {
+        padding: 14px;
+      }
+    }
+
+    /* ==================== 접근성 개선 ==================== */
+    .login-btn:focus,
+    .form-group input:focus,
+    .back-to-home a:focus {
+      outline: 2px solid #667eea;
+      outline-offset: 2px;
+    }
+
+    /* ==================== 고대비 모드 지원 ==================== */
+    @media (prefers-contrast: high) {
+      .login-card {
+        border: 2px solid #000;
+      }
+
+      .form-group input {
+        border-color: #000;
+      }
+
+      .login-btn {
+        border: 2px solid #000;
+      }
+    }
+
+    /* ==================== 다크 모드 지원 ==================== */
+    @media (prefers-color-scheme: dark) {
+      .login-card {
+        background: #2d2d2d;
+        color: #fff;
+      }
+
+      .login-header h1,
+      .form-group label {
+        color: #fff;
+      }
+
+      .form-group input {
+        background: #3d3d3d;
+        border-color: #555;
+        color: #fff;
+      }
+
+      .demo-account {
+        background: #3d3d3d;
+        color: #fff;
+      }
+
+      .demo-account h4,
+      .demo-account strong {
+        color: #fff;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- ==================== 로그인 페이지 메인 컨테이너 ==================== -->
+  <div class="login-container">
+    <div class="login-card">
+      <!-- 로그인 헤더 -->
+      <div class="login-header">
+        <h1>
+          <i class="fas fa-user-shield"></i>
+          관리자 로그인
+        </h1>
+        <p>HTeng 관리자 페이지에 접근하려면 로그인하세요</p>
+      </div>
+
+      <!-- 에러 메시지 영역 -->
+      <div class="error-message" id="errorMessage"></div>
+
+      <!-- 로그인 폼 -->
+      <form class="login-form" id="loginForm">
+        <div class="form-group">
+          <label for="username">아이디</label>
+          <input type="text" id="username" name="username" required placeholder="관리자 아이디를 입력하세요"
+            autocomplete="username">
+        </div>
+
+        <div class="form-group">
+          <label for="password">비밀번호</label>
+          <input type="password" id="password" name="password" required placeholder="비밀번호를 입력하세요"
+            autocomplete="current-password">
+        </div>
+
+        <!-- 로그인 버튼 -->
+        <button type="submit" class="login-btn" id="loginBtn">
+          <span class="btn-text">로그인</span>
+          <span class="loading" style="display: none;"></span>
+        </button>
+      </form>
+
+      <!-- 데모 계정 정보 -->
+      <div class="demo-account">
+        <h4>
+          <i class="fas fa-info-circle"></i>
+          데모 계정
+        </h4>
+        <p><strong>아이디:</strong> admin</p>
+        <p><strong>비밀번호:</strong> admin1234</p>
+      </div>
+
+      <!-- 홈페이지 링크 -->
+      <div class="back-to-home">
+        <a href="../HomePage/HT-eng-HomePage.html">
+          <i class="fas fa-home"></i>
+          홈페이지로 돌아가기
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JavaScript 로직 ==================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+  <script>
+    // ==================== 로그인 페이지 초기화 ====================
+    /**
+     * 페이지 로드 시 실행되는 초기화 함수
+     * @description DOM 로드 완료 후 필요한 설정들을 초기화
+     */
+    document.addEventListener('DOMContentLoaded', function () {
+      console.log('🚀 로그인 페이지 초기화 시작...');
+
+      // 입력 필드 초기값 설정
+      initializeForm();
+
+      // 이벤트 리스너 설정
+      setupEventListeners();
+
+      // 서버 연결 상태 확인
+      checkServerConnection();
+
+      console.log('✅ 로그인 페이지 초기화 완료');
+    });
+
+    // ==================== 폼 초기화 ====================
+    /**
+     * 로그인 폼 초기화
+     * @description 입력 필드의 기본값과 플레이스홀더 설정
+     */
+    function initializeForm() {
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+
+      if (usernameInput) {
+        usernameInput.value = 'admin';
+        usernameInput.placeholder = '관리자 아이디를 입력하세요';
+      }
+
+      if (passwordInput) {
+        passwordInput.value = 'admin1234';
+        passwordInput.placeholder = '비밀번호를 입력하세요';
+      }
+    }
+
+    // ==================== 이벤트 리스너 설정 ====================
+    /**
+     * 페이지 이벤트 리스너 설정
+     * @description 로그인 폼 제출, 키보드 이벤트 등 설정
+     */
+    function setupEventListeners() {
+      // 로그인 폼 제출 이벤트
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+      }
+
+      // Enter 키 이벤트
+      document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+          const loginForm = document.getElementById('loginForm');
+          if (loginForm) {
+            loginForm.dispatchEvent(new Event('submit'));
+          }
+        }
+      });
+
+      // 입력 필드 포커스 이벤트
+      const inputs = document.querySelectorAll('.form-group input');
+      inputs.forEach(input => {
+        input.addEventListener('focus', function () {
+          this.parentElement.classList.add('focused');
+        });
+
+        input.addEventListener('blur', function () {
+          if (!this.value) {
+            this.parentElement.classList.remove('focused');
+          }
+        });
+      });
+    }
+
+    // ==================== 서버 연결 상태 확인 ====================
+    /**
+     * 서버 연결 상태를 확인하는 함수
+     * @description 페이지 로드 시 서버가 응답하는지 확인
+     */
+    async function checkServerConnection() {
+      try {
+        console.log('🔍 서버 연결 상태 확인 중...');
+        console.log('🌐 서버 URL: http://localhost:3000');
+
+        const startTime = performance.now();
+
+        const response = await fetch('http://localhost:3000/api/main-page', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          // 타임아웃 설정 (5초)
+          signal: AbortSignal.timeout(5000)
+        });
+
+        const endTime = performance.now();
+        const responseTime = endTime - startTime;
+
+        console.log('📥 서버 응답 수신:', response.status, response.statusText);
+        console.log('⏱️  응답 시간:', responseTime.toFixed(2) + 'ms');
+
+        if (response.ok) {
+          console.log('✅ 서버 연결 성공');
+          hideError();
+
+          // 응답 데이터 확인
+          try {
+            const data = await response.json();
+            console.log('📊 서버 데이터:', data);
+          } catch (parseError) {
+            console.warn('⚠️  응답 데이터 파싱 실패:', parseError);
+          }
+        } else {
+          console.warn('⚠️  서버 응답 오류:', response.status, response.statusText);
+          showError(`서버 응답에 문제가 있습니다. (${response.status}) 잠시 후 다시 시도해주세요.`);
+        }
+      } catch (error) {
+        console.error('❌ 서버 연결 확인 실패:', error);
+
+        let userMessage = '서버 연결을 확인할 수 없습니다.';
+
+        if (error.name === 'AbortError') {
+          console.error('❌ 서버 연결 타임아웃 (5초)');
+          userMessage = '서버 연결 시간이 초과되었습니다. 서버가 실행 중인지 확인해주세요.';
+        } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          console.error('❌ 서버 연결 실패 (CORS 또는 네트워크 오류)');
+          userMessage = '서버에 연결할 수 없습니다. 서버가 실행 중이고 올바른 포트에서 실행되고 있는지 확인해주세요.';
+        } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          console.error('❌ 네트워크 연결 실패');
+          userMessage = '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요.';
+        } else {
+          console.error('❌ 예상치 못한 연결 오류:', error.message);
+          userMessage = '서버 연결 중 예상치 못한 오류가 발생했습니다.';
+        }
+
+        showError(userMessage);
+
+        // 추가 디버그 정보
+        console.log('🔍 연결 문제 디버그 정보:');
+        console.log('  - 네트워크 상태:', navigator.onLine);
+        console.log('  - 현재 시간:', new Date().toISOString());
+        console.log('  - 브라우저:', navigator.userAgent);
+
+        // 서버 상태 재확인 시도 (30초 후)
+        setTimeout(() => {
+          console.log('🔄 서버 연결 상태 재확인 시도...');
+          checkServerConnection();
+        }, 30000);
+      }
+    }
+
+    // ==================== 로그인 처리 ====================
+    /**
+     * 로그인 폼 제출 처리 함수
+     * @param {Event} e - 폼 제출 이벤트
+     */
+    async function handleLogin(e) {
+      e.preventDefault();
+      console.log('🔐 로그인 시도 중...');
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginBtn = document.getElementById('loginBtn');
+      const btnText = loginBtn.querySelector('.btn-text');
+      const loading = loginBtn.querySelector('.loading');
+      const errorMessage = document.getElementById('errorMessage');
+
+      // 입력값 검증
+      if (!username || !password) {
+        showError('아이디와 비밀번호를 모두 입력해주세요.');
+        return;
+      }
+
+      // 로딩 상태 표시
+      setLoadingState(true);
+      hideError();
+
+      try {
+        console.log('📡 서버에 로그인 요청 전송 중...');
+        console.log('📤 요청 데이터:', { username, password: '***' });
+
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ username, password }),
+          // 로그인 요청 타임아웃 (10초)
+          signal: AbortSignal.timeout(10000)
+        });
+
+        console.log('📥 서버 응답 수신:', response.status, response.statusText);
+        console.log('📋 응답 헤더:', Object.fromEntries(response.headers.entries()));
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ 로그인 성공 데이터:', data);
+
+          // 관리자 권한 확인
+          if (data.role !== 'admin') {
+            showError('관리자 계정만 로그인할 수 있습니다.');
+            return;
+          }
+
+          // 로그인 성공 처리
+          await handleLoginSuccess(data);
+        } else {
+          // 로그인 실패 - 응답 본문 확인
+          let errorData;
+          try {
+            errorData = await response.json();
+            console.log('❌ 로그인 실패 응답:', errorData);
+          } catch (parseError) {
+            console.warn('⚠️  응답 본문 파싱 실패:', parseError);
+            errorData = { message: '알 수 없는 오류가 발생했습니다.' };
+          }
+
+          const errorMsg = errorData.message || `로그인에 실패했습니다. (${response.status})`;
+          showError(errorMsg);
+        }
+      } catch (error) {
+        console.error('❌ 로그인 처리 중 오류:', error);
+        console.error('❌ 에러 상세 정보:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack
+        });
+
+        let userMessage = '로그인 처리 중 예상치 못한 오류가 발생했습니다.';
+
+        if (error.name === 'AbortError') {
+          userMessage = '로그인 요청 시간이 초과되었습니다. 네트워크 상태를 확인해주세요.';
+        } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          userMessage = '서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.';
+        } else if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+          userMessage = '네트워크 연결에 실패했습니다. 인터넷 연결을 확인해주세요.';
+        } else if (error.message.includes('CORS')) {
+          userMessage = 'CORS 정책 오류가 발생했습니다. 서버 설정을 확인해주세요.';
+        }
+
+        showError(userMessage);
+
+        // 개발 환경에서 추가 디버그 정보
+        if (window.location.hostname === 'localhost') {
+          console.log('🔍 디버그 정보:');
+          console.log('  - 현재 URL:', window.location.href);
+          console.log('  - 서버 URL:', 'http://localhost:3000');
+          console.log('  - 네트워크 상태:', navigator.onLine);
+          console.log('  - User Agent:', navigator.userAgent);
+        }
+      } finally {
+        // 로딩 상태 해제
+        setLoadingState(false);
+      }
+    }
+
+    // ==================== 로그인 성공 처리 ====================
+    /**
+     * 로그인 성공 시 처리 함수
+     * @param {Object} data - 서버에서 받은 사용자 데이터
+     */
+    async function handleLoginSuccess(data) {
+      console.log('🎉 관리자 로그인 성공:', data);
+
+      // 인증 정보 저장
+      saveAuthData(data);
+
+      // 성공 메시지 표시
+      showSuccessMessage();
+
+      // 1초 후 관리자 페이지로 리다이렉트
+      setTimeout(() => {
+        window.location.href = 'HT_eng-Admin.html';
+      }, 1000);
+    }
+
+    // ==================== 인증 데이터 저장 ====================
+    /**
+     * 인증 데이터를 로컬/세션 스토리지에 저장
+     * @param {Object} data - 저장할 인증 데이터
+     */
+    function saveAuthData(data) {
+      try {
+        // 로컬 스토리지에 저장 (브라우저 닫아도 유지)
+        localStorage.setItem('auth_token', data.token);
+        localStorage.setItem('auth_user', data.username);
+        localStorage.setItem('auth_role', data.role);
+        localStorage.setItem('auth_displayName', data.displayName);
+
+        // 세션 스토리지에도 저장 (탭별 세션)
+        sessionStorage.setItem('auth_token', data.token);
+        sessionStorage.setItem('auth_user', data.username);
+        sessionStorage.setItem('auth_role', data.role);
+        sessionStorage.setItem('auth_displayName', data.displayName);
+
+        console.log('💾 인증 데이터 저장 완료');
+      } catch (error) {
+        console.error('❌ 인증 데이터 저장 실패:', error);
+        showError('인증 정보 저장에 실패했습니다.');
+      }
+    }
+
+    // ==================== UI 상태 관리 ====================
+    /**
+     * 로딩 상태 설정
+     * @param {boolean} isLoading - 로딩 상태 여부
+     */
+    function setLoadingState(isLoading) {
+      const loginBtn = document.getElementById('loginBtn');
+      const btnText = loginBtn.querySelector('.btn-text');
+      const loading = loginBtn.querySelector('.loading');
+
+      loginBtn.disabled = isLoading;
+      btnText.style.display = isLoading ? 'none' : 'inline';
+      loading.style.display = isLoading ? 'inline-block' : 'none';
+    }
+
+    /**
+     * 에러 메시지 표시
+     * @param {string} message - 표시할 에러 메시지
+     */
+    function showError(message) {
+      const errorMessage = document.getElementById('errorMessage');
+      if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.classList.add('show');
+
+        // 에러 메시지 자동 숨김 (5초 후)
+        setTimeout(() => {
+          hideError();
+        }, 5000);
+      }
+    }
+
+    /**
+     * 에러 메시지 숨김
+     */
+    function hideError() {
+      const errorMessage = document.getElementById('errorMessage');
+      if (errorMessage) {
+        errorMessage.classList.remove('show');
+      }
+    }
+
+    /**
+     * 성공 메시지 표시
+     */
+    function showSuccessMessage() {
+      const successMessage = document.createElement('div');
+      successMessage.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: #4CAF50;
+        color: white;
+        padding: 20px 40px;
+        border-radius: 8px;
+        font-size: 18px;
+        z-index: 10000;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease-out;
+      `;
+      successMessage.textContent = '로그인 성공! 관리자 페이지로 이동합니다...';
+      document.body.appendChild(successMessage);
+
+      // 애니메이션 CSS 추가
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+          to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // ==================== 유틸리티 함수 ====================
+    /**
+     * 디버그 정보 출력
+     * @description 개발 환경에서 유용한 디버그 정보 표시
+     */
+    function logDebugInfo() {
+      if (window.location.hostname === 'localhost') {
+        console.log('🔍 디버그 정보:');
+        console.log('  - 현재 URL:', window.location.href);
+        console.log('  - User Agent:', navigator.userAgent);
+        console.log('  - 화면 해상도:', `${screen.width}x${screen.height}`);
+        console.log('  - 뷰포트:', `${window.innerWidth}x${window.innerHeight}`);
+        console.log('  - 로컬 스토리지:', Object.keys(localStorage));
+        console.log('  - 세션 스토리지:', Object.keys(sessionStorage));
+      }
+    }
+
+    // 개발 환경에서 디버그 정보 출력
+    if (window.location.hostname === 'localhost') {
+      setTimeout(logDebugInfo, 1000);
+    }
+  </script>
+</body>
+
+</html>

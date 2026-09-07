@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회사 소개 - HT ENG</title>
+    <link rel="stylesheet" href="HT_eng-Company.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Leaflet (OpenStreetMap 기반, 완전 무료) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+
+<body>
+    <!-- 헤더 -->
+    <div id="header-container"></div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="company-page">
+        <div class="container">
+            <!-- 회사 개요 -->
+            <section class="company-section company-overview">
+                <h2 id="companyOverviewTitle">회사 개요</h2>
+                <div id="companyOverview" class="overview-content">
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i> 회사 정보를 불러오는 중...
+                    </div>
+                </div>
+            </section>
+
+            <!-- 회사 연혁 -->
+            <section class="company-section company-history">
+                <h2>회사 연혁</h2>
+                <div id="companyHistory" class="history-content">
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i> 연혁 정보를 불러오는 중...
+                    </div>
+                </div>
+            </section>
+
+            <!-- 사업 분야 -->
+            <section class="company-section company-business">
+                <h2>사업 분야</h2>
+                <div id="companyBusiness" class="business-content">
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i> 사업 정보를 불러오는 중...
+                    </div>
+                </div>
+            </section>
+
+            <!-- 오시는 길 -->
+            <section class="company-section company-location">
+                <h2>오시는 길</h2>
+                <div id="companyLocation" class="location-content">
+                    <div class="loading-message">
+                        <i class="fas fa-spinner fa-spin"></i> 위치 정보를 불러오는 중...
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- 푸터 -->
+    <div id="footer-container"></div>
+
+    <script src="../Components/Header/auth-common.js"></script>
+    <script src="../Components/Header/HT_eng-header.js"></script>
+    <script src="../Components/Footer/HT_eng-footer.js"></script>
+    <script>
+        // 회사 정보 로드
+        async function loadCompanyInfo() {
+            try {
+                console.log('회사 정보 로드 시작...');
+                const response = await fetch('http://localhost:3000/api/intro-pages');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('받은 데이터:', data);
+
+                    if (data.company) {
+                        const companyInfo = data.company;
+                        console.log('회사 정보:', companyInfo);
+
+                        // 회사 개요 렌더링
+                        renderCompanyOverview(companyInfo);
+
+                        // 회사 연혁 렌더링
+                        renderCompanyHistory(companyInfo.history || []);
+
+                        // 사업 분야 렌더링
+                        renderCompanyBusiness(companyInfo.business || '', companyInfo.businessItems || []);
+
+                        // 오시는 길 렌더링
+                        renderCompanyLocation(companyInfo.location || '', companyInfo.mapLat || null, companyInfo.mapLng || null, companyInfo.mapZoom || null);
+                    } else {
+                        console.error('회사 정보가 없습니다.');
+                        showErrorMessage('회사 정보를 불러올 수 없습니다.');
+                    }
+                } else {
+                    console.error('회사 정보 로드 실패:', response.status);
+                    showErrorMessage('회사 정보를 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('회사 정보 로드 실패:', error);
+                showErrorMessage('회사 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 회사 개요 렌더링
+        function renderCompanyOverview(companyInfo) {
+            const companyOverviewTitle = document.getElementById('companyOverviewTitle');
+            const companyOverview = document.getElementById('companyOverview');
+
+            if (companyOverviewTitle) {
+                companyOverviewTitle.textContent = companyInfo.title || '회사 개요';
+            }
+
+            if (companyOverview) {
+                let contentHTML = '';
+
+                if (companyInfo.name) {
+                    contentHTML += `<h3>${companyInfo.name}</h3>`;
+                }
+
+                if (companyInfo.description) {
+                    contentHTML += `<p>${companyInfo.description}</p>`;
+                }
+
+                if (!contentHTML) {
+                    contentHTML = '<p>회사 정보가 준비 중입니다.</p>';
+                }
+
+                companyOverview.innerHTML = contentHTML;
+            }
+        }
+
+        // 회사 연혁 렌더링
+        function renderCompanyHistory(history) {
+            const companyHistory = document.getElementById('companyHistory');
+
+            if (!companyHistory) return;
+
+            if (!history || history.length === 0) {
+                companyHistory.innerHTML = '<p class="no-data">등록된 연혁이 없습니다.</p>';
+                return;
+            }
+
+            const historyHTML = `
+                <div class="history-timeline">
+                    ${history.map(item => `
+                        <div class="history-item">
+                            <div class="history-year">${item.year}</div>
+                            <div class="history-event">${item.event}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+
+            companyHistory.innerHTML = historyHTML;
+        }
+
+        // 사업 분야 렌더링
+        function renderCompanyBusiness(business, businessItems) {
+            const companyBusiness = document.getElementById('companyBusiness');
+
+            if (!companyBusiness) return;
+
+            let contentHTML = '';
+
+            if (business) {
+                contentHTML += `<p class="business-overview">${business}</p>`;
+            }
+
+            if (businessItems && businessItems.length > 0) {
+                contentHTML += `
+                    <div class="business-items">
+                        <h4>주요 사업 항목</h4>
+                        <div class="business-grid">
+                            ${businessItems.map(item => `
+                                <div class="business-item">
+                                    <h5>${item.title}</h5>
+                                    <p>${item.description}</p>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (!contentHTML) {
+                contentHTML = '<p class="no-data">사업 정보가 준비 중입니다.</p>';
+            }
+
+            companyBusiness.innerHTML = contentHTML;
+        }
+
+        // 오시는 길 렌더링
+        function renderCompanyLocation(location, mapLat, mapLng, mapZoom) {
+            const companyLocation = document.getElementById('companyLocation');
+
+            if (!companyLocation) return;
+
+            if (location) {
+                companyLocation.innerHTML = `
+                    <div class="address">
+                        <h4><i class="fas fa-map-marker-alt"></i> 주소</h4>
+                        <p>${location}</p>
+                    </div>
+                    <div class="map-container">
+                        <div id="map" style="height: 400px; width: 100%; border-radius: 8px;">
+                            <!-- Leaflet 지도가 여기에 표시됩니다 -->
+                        </div>
+                    </div>
+                `;
+
+                // Leaflet 지도 초기화
+                if (mapLat && mapLng) {
+                    initLeafletMap(mapLat, mapLng, location, mapZoom);
+                } else {
+                    // 좌표가 없으면 주소로 검색
+                    geocodeAddress(location);
+                }
+            } else {
+                companyLocation.innerHTML = '<p class="no-data">위치 정보가 준비 중입니다.</p>';
+            }
+        }
+
+        // Leaflet 지도 초기화
+        function initLeafletMap(lat, lng, address, zoom = 15) {
+            try {
+                const mapElement = document.getElementById('map');
+                if (!mapElement) return;
+
+                const map = L.map(mapElement).setView([lat, lng], zoom);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                const marker = L.marker([lat, lng], {
+                    title: 'HT ENG'
+                }).addTo(map);
+
+                const infoWindow = L.popup({
+                    closeButton: false,
+                    className: 'leaflet-popup-content'
+                })
+                    .setLatLng([lat, lng])
+                    .setContent(`
+                    <div style="padding: 10px; min-width: 200px;">
+                        <h4 style="margin: 0 0 8px 0; color: #333;">🏢 HT ENG</h4>
+                        <p style="margin: 0; color: #666; font-size: 14px;">${address}</p>
+                        <div style="margin-top: 10px;">
+                            <a href="https://www.openstreetmap.org/directions?from=0,0&to=${lat},${lng}" 
+                               target="_blank" style="color: #03c75a; text-decoration: none;">
+                                📍 오픈스트리트맵에서 길찾기
+                            </a>
+                        </div>
+                    </div>
+                `);
+
+                marker.bindPopup(infoWindow);
+
+            } catch (error) {
+                console.error('Leaflet 지도 초기화 오류:', error);
+                showMapError();
+            }
+        }
+
+        // 주소를 좌표로 변환 (간단한 방법)
+        function geocodeAddress(address) {
+            // 주소 변환 대신 기본 좌표 사용 (김포시 마스터비즈파크 정확한 위치)
+            const defaultLat = 37.637966;
+            const defaultLng = 126.680780;
+
+            console.log('주소 변환 대신 기본 좌표 사용:', address);
+            initLeafletMap(defaultLat, defaultLng, address, 18);
+        }
+
+        // 지도 오류 시 대체 표시
+        function showMapError() {
+            const mapElement = document.getElementById('map');
+            if (!mapElement) return;
+
+            mapElement.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; background: #f8f9fa; color: #6c757d;">
+                    <i class="fas fa-map-marked-alt" style="font-size: 3rem; margin-bottom: 15px;"></i>
+                    <p style="margin: 5px 0; font-size: 1.1rem;">지도를 불러올 수 없습니다</p>
+                    <small>기본 좌표를 사용합니다</small>
+                    <div style="margin-top: 20px;">
+                        <a href="https://www.openstreetmap.org/search?query=${encodeURIComponent(document.getElementById('companyLocation').querySelector('.address p').textContent)}" 
+                           target="_blank" class="btn btn-primary" style="padding: 8px 16px; text-decoration: none; border-radius: 5px; background: #03c75a; color: white;">
+                            오픈스트리트맵에서 보기
+                        </a>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 에러 메시지 표시
+        function showErrorMessage(message) {
+            const sections = ['companyOverview', 'companyHistory', 'companyBusiness', 'companyLocation'];
+            sections.forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                if (section) {
+                    section.innerHTML = `
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>${message}</p>
+                        </div>
+                    `;
+                }
+            });
+        }
+
+        // 페이지 로드 시 회사 정보 로드 및 인증 상태 유지
+        document.addEventListener('DOMContentLoaded', function () {
+            // 인증 상태 확인 및 유지
+            if (typeof maintainAuthState === 'function') {
+                maintainAuthState();
+            }
+            
+            // 회사 정보 로드
+            loadCompanyInfo();
+        });
+
+        // 페이지 로드 시 인증 상태 확인 및 유지
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof maintainAuthState === 'function') {
+                maintainAuthState();
+            }
+        });
+    </script>
+</body>
+
+</html>

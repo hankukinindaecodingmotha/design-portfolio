@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CEO 소개 - HT ENG</title>
+    <link rel="stylesheet" href="HT_eng-Ceo.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- 헤더 -->
+    <div id="header-container"></div>
+
+    <!-- 메인 콘텐츠 -->
+    <main class="ceo-page">
+        <div class="container">
+            <div class="ceo-content">
+                <div class="ceo-image-section">
+                    <img id="ceoImage" src="../Assesets/Image/CEO.jpeg" alt="CEO" class="ceo-image">
+                </div>
+                <div class="ceo-text-section">
+                    <div class="ceo-header">
+                        <h1 id="ceoName">CEO 소개</h1>
+                        <p class="ceo-position" id="ceoPosition">HT ENG의 리더십</p>
+                    </div>
+                    <div id="ceoContent" class="ceo-message">
+                        <div class="loading-message">
+                            <i class="fas fa-spinner fa-spin"></i> CEO 정보를 불러오는 중...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 푸터 -->
+    <div id="footer-container"></div>
+
+    <script src="../Components/Header/HT_eng-header.js"></script>
+    <script src="../Components/Footer/HT_eng-footer.js"></script>
+    <script>
+        // CEO 정보 로드
+        async function loadCeoInfo() {
+            try {
+                console.log('CEO 정보 로드 시작...');
+                const response = await fetch('http://localhost:3000/api/intro-pages');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('받은 데이터:', data);
+                    
+                    if (data.ceo) {
+                        const ceoInfo = data.ceo;
+                        console.log('CEO 정보:', ceoInfo);
+                        
+                        // CEO 이미지 업데이트
+                        const ceoImage = document.getElementById('ceoImage');
+                        if (ceoImage && ceoInfo.image) {
+                            ceoImage.src = `../Assesets/Image/${ceoInfo.image}`;
+                            ceoImage.alt = ceoInfo.name || 'CEO';
+                        }
+                        
+                        // CEO 이름과 직책 업데이트
+                        const ceoName = document.getElementById('ceoName');
+                        const ceoPosition = document.getElementById('ceoPosition');
+                        
+                        if (ceoName) ceoName.textContent = ceoInfo.name || 'CEO 소개';
+                        if (ceoPosition) ceoPosition.textContent = ceoInfo.position || 'HT ENG의 리더십';
+                        
+                        // CEO 메시지 렌더링
+                        renderCeoContent(ceoInfo);
+                    } else {
+                        console.error('CEO 정보가 없습니다.');
+                        showErrorMessage('CEO 정보를 불러올 수 없습니다.');
+                    }
+                } else {
+                    console.error('CEO 정보 로드 실패:', response.status);
+                    showErrorMessage('CEO 정보를 불러오는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('CEO 정보 로드 실패:', error);
+                showErrorMessage('CEO 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // CEO 메시지 렌더링
+        function renderCeoContent(ceoInfo) {
+            const ceoContent = document.getElementById('ceoContent');
+            
+            if (!ceoContent) return;
+            
+            let contentHTML = '';
+            
+            if (ceoInfo.introduction) {
+                contentHTML += `
+                    <div class="ceo-introduction">
+                        <h3>인사말</h3>
+                        <p>${ceoInfo.introduction}</p>
+                    </div>
+                `;
+            }
+            
+            if (ceoInfo.vision) {
+                contentHTML += `
+                    <div class="ceo-vision">
+                        <h3>비전</h3>
+                        <p>${ceoInfo.vision}</p>
+                    </div>
+                `;
+            }
+            
+            if (!contentHTML) {
+                contentHTML = '<p>CEO 정보가 준비 중입니다.</p>';
+            }
+            
+            ceoContent.innerHTML = contentHTML;
+        }
+
+        // 에러 메시지 표시
+        function showErrorMessage(message) {
+            const ceoContent = document.getElementById('ceoContent');
+            if (ceoContent) {
+                ceoContent.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 페이지 로드 시 CEO 정보 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCeoInfo();
+        });
+    </script>
+</body>
+</html>

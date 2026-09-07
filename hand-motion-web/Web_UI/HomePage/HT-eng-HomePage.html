@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>HT</title>
+  <link rel="stylesheet" href="HT_eng-HomePageStyle.css" />
+  <link rel="stylesheet" href="../Components/Header/HT_eng-header.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <script defer src="../Components/Header/auth-common.js"></script>
+  <script defer src="HT_eng-HomePageFunction.js"></script>
+</head>
+
+<body>
+  <!-- header 삽입될 위치 -->
+  <div id="header-container"></div>
+
+  <main class="content" id="top">
+    <!-- 배너 슬라이더 -->
+    <section class="banner-slider">
+      <div class="slider-container">
+        <div class="slider-track" id="sliderTrack">
+          <div class="slide active">
+            <img src="../Assesets/Image/회사 배너1.png" alt="HTeng 회사 배너 1" />
+            <div class="slide-content">
+              <h2>HTeng에 오신 것을 환영합니다</h2>
+              <p>전문적인 전기 보호 장치 솔루션을 제공하는 HTeng입니다</p>
+              <a href="../Company/HT_eng-Company.html" class="cta-button">자세히 보기</a>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="../Assesets/Image/회사 배너2.png" alt="HTeng 회사 배너 2" />
+            <div class="slide-content">
+              <h2>최고 품질의 제품</h2>
+              <p>Schneider, Eaton, Legrand 등 글로벌 브랜드 제품을 공급합니다</p>
+              <a href="../Product/HT_eng-EOCR.html" class="cta-button">제품 보기</a>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="../Assesets/Image/회사 배너3.png" alt="HTeng 회사 배너 3" />
+            <div class="slide-content">
+              <h2>전문 기술 지원</h2>
+              <p>설치부터 유지보수까지 전문적인 기술 지원을 제공합니다</p>
+              <a href="../Support/HT_eng-support.html" class="cta-button">지원 문의</a>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="../Assesets/Image/회사 배너4.png" alt="HTeng 회사 배너 4" />
+            <div class="slide-content">
+              <h2>신뢰할 수 있는 파트너</h2>
+              <p>20년 이상의 경험과 전문성을 바탕으로 고객과 함께 성장합니다</p>
+              <a href="../Company/HT_eng-Company.html" class="cta-button">회사 소개</a>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="../Assesets/Image/회사 배너5.png" alt="HTeng 회사 배너 5" />
+            <div class="slide-content">
+              <h2>맞춤형 솔루션</h2>
+              <p>고객의 요구사항에 맞는 최적의 전기 보호 시스템을 설계합니다</p>
+              <a href="../Contact/HT_eng-contact.html" class="cta-button">솔루션 문의</a>
+            </div>
+          </div>
+          <div class="slide">
+            <img src="../Assesets/Image/회사 배너6.png" alt="HTeng 회사 배너 6" />
+            <div class="slide-content">
+              <h2>글로벌 네트워크</h2>
+              <p>전 세계 주요 제조업체와의 파트너십으로 최신 기술을 제공합니다</p>
+              <a href="../Support/HT_eng-support.html" class="cta-button">파트너십</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 슬라이더 네비게이션 버튼 -->
+        <button class="slider-btn prev-btn" onclick="changeSlide(-1)">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="slider-btn next-btn" onclick="changeSlide(1)">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- 슬라이더 인디케이터 -->
+        <div class="slider-indicators" id="sliderIndicators">
+          <span class="indicator active" onclick="goToSlide(0)"></span>
+          <span class="indicator" onclick="goToSlide(1)"></span>
+          <span class="indicator" onclick="goToSlide(2)"></span>
+          <span class="indicator" onclick="goToSlide(3)"></span>
+          <span class="indicator" onclick="goToSlide(4)"></span>
+          <span class="indicator" onclick="goToSlide(5)"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 브랜드 박스 -->
+    <section class="image-section">
+      <div class="brands" id="brandsContainer">
+        <a href="https://www.se.com/kr/ko/" class="brand-box" target="_blank">
+          <img src="../Assesets/Image/슈나이더.png" alt="슈나이더" />
+        </a>
+        <a href="https://www.pizzato.com" class="brand-box" target="_blank">
+          <img src="../Assesets/Image/피자토.png" alt="피자토" />
+        </a>
+        <a href="https://www.eaton.com" class="brand-box" target="_blank">
+          <img src="../Assesets/Image/이튼.png" alt="이튼" />
+        </a>
+        <a href="https://www.legrand.com" class="brand-box" target="_blank">
+          <img src="../Assesets/Image/르그랑.png" alt="르그랑" />
+        </a>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="contact-section">
+      <h2>Contact</h2>
+      <hr class="section-divider" />
+
+      <div class="contact-content first-line">
+        <img id="ceoImage" src="../Assesets/Image/CEO.jpeg" alt="회사 건물" class="company-image" />
+        <div class="contact-info" id="ceoInfo">
+          <p><strong>이름:</strong> 정탁영</p>
+          <p><strong>직급:</strong> CEO</p>
+          <p><strong>전화:</strong> 010-1234-1234</p>
+          <p><strong>이메일:</strong> contact@hteng.com</p>
+          <p><strong>주소:</strong> 서울특별시 강남구 어딘가로 123</p>
+          <p><strong>경력</strong></p>
+          <p>- 슈나이더 일렉트릭: 2000-2010</p>
+          <p>- HT_ENG: ~ 2025</p>
+        </div>
+      </div>
+
+      <div class="contact-content second-line">
+        <div class="contact-info" id="managerInfo">
+          <p><strong>이름:</strong> 민과장님</p>
+          <p><strong>직급:</strong> Manager</p>
+          <p><strong>전화:</strong> 010-1234-1234</p>
+          <p><strong>이메일:</strong> contact@hteng.com</p>
+          <p><strong>주소:</strong> 서울특별시 강남구 어딘가로 123</p>
+          <p><strong>경력</strong></p>
+          <p>- HT_ENG: ~2025</p>
+        </div>
+        <img id="managerImage" src="../Assesets/Image/CEO.jpeg" alt="민과장님 사진" class="company-image" />
+      </div>
+    </section>
+
+    <!-- 설명 -->
+    <section class="description-section" id="descriptionsContainer">
+      <div class="desc-block">
+        <img src="../Assesets/Image/sale.jpg" alt="판매 이미지" />
+        <div class="desc-text">
+          <p>
+            HTENG는 다양한 전기 부품을 합리적인 가격으로 제공합니다. 슈나이더, 이튼,
+            르그랑 등의 브랜드를 취급합니다.
+          </p>
+        </div>
+      </div>
+      <div class="desc-block">
+        <img src="../Assesets/Image/support.jpg" alt="기술 지원 이미지" />
+        <div class="desc-text">
+          <p>
+            고객의 안정적인 시스템 운영을 위해 전문적인 기술 지원을 제공합니다.
+            설치부터 유지보수까지 책임집니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 푸터 -->
+  <div id="footer-container"></div>
+
+  <!-- 푸터 로더 -->
+  <script src="../Components/Footer/HT_eng-footer.js"></script>
+
+  <!-- 인증 관련 공통 스크립트 -->
+  <script src="../Components/Header/auth-common.js"></script>
+
+  <!-- 홈 전용 헤더 로더: 단일 경로로 헤더 주입 -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      setTimeout(function () {
+        var container = document.getElementById('header-container');
+        if (!container || container.children.length > 0) return;
+
+        // 헤더 HTML 로드 및 주입
+        fetch('../Components/Header/HT_eng-header.html')
+          .then(function (r) {
+            if (!r.ok) throw new Error('header html not found');
+            return r.text();
+          })
+          .then(function (html) {
+            container.innerHTML = html;
+
+            // 메가메뉴 이벤트 바인딩
+            var menuItems = document.querySelectorAll('.menu-item');
+            var megaMenu = document.getElementById('megaMenu');
+            var megaContents = document.querySelectorAll('.mega-menu-content');
+            var topBar = document.querySelector('.top-bar');
+
+            if (menuItems && megaMenu && megaContents && topBar) {
+              menuItems.forEach(function (item) {
+                item.addEventListener('mouseenter', function () {
+                  var menu = item.getAttribute('data-menu');
+                  megaMenu.classList.add('active');
+                  megaContents.forEach(function (c) { c.classList.remove('active'); });
+                  var activeContent = document.querySelector('.mega-menu-content[data-menu="' + menu + '"]');
+                  if (activeContent) activeContent.classList.add('active');
+                });
+              });
+
+              topBar.addEventListener('mouseleave', function () {
+                if (megaMenu.matches(':hover')) return;
+                megaMenu.classList.remove('active');
+                megaContents.forEach(function (c) { c.classList.remove('active'); });
+              });
+
+              megaMenu.addEventListener('mouseleave', function () {
+                megaMenu.classList.remove('active');
+                megaContents.forEach(function (c) { c.classList.remove('active'); });
+              });
+            }
+
+            // 인증 UI 렌더링 및 자동 유지 설정
+            if (typeof renderAuthUI === 'function') {
+              renderAuthUI();
+
+              // 자동 인증 상태 유지 설정
+              if (typeof setupAutoAuthMaintenance === 'function') {
+                console.log('🔧 홈페이지 자동 인증 상태 유지 설정 시작...');
+                setupAutoAuthMaintenance();
+              } else {
+                console.warn('⚠️  setupAutoAuthMaintenance 함수를 찾을 수 없음');
+              }
+            }
+          })
+          .catch(function () {
+            // 에러 시 최소한의 헤더만 표시
+            container.innerHTML = '<header class="top-bar"><div class="top-bar-left"><img src="../Assesets/Image/HT_ENG.png" class="logo" alt="로고"/></div><div class="top-bar-center"></div><div class="top-bar-right"><span id="authArea"><a href="../Admin/HT_eng-Admin-Login.html">관리자</a></span></div></header>';
+          });
+      }, 100);
+    });
+  </script>
+</body>
+
+</html>

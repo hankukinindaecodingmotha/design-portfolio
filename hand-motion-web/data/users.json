@@ -1,0 +1,21 @@
+[
+  {
+    "id": "admin",
+    "username": "admin",
+    "displayName": "시스템 관리자",
+    "passwordHash": "$2a$12$70wIyrztGXHDmIPL.sotMeG7aGB81GntB3tHh7mxjC9qLLpDa/f6.",
+    "role": "admin",
+    "status": "active",
+    "email": "admin@hteng.com",
+    "joinDate": "2025-08-21",
+    "lastLogin": null,
+    "loginAttempts": 0,
+    "lockedUntil": null,
+    "permissions": [
+      "read",
+      "write",
+      "delete",
+      "admin"
+    ]
+  }
+]
