@@ -14,24 +14,58 @@ import { createNoise } from "./noise.js";
 const { noise2D, fbm2D } = createNoise(20260906);
 
 export function createQuintessence() {
-  const stars = Array.from({ length: 260 }, () => ({
-    x: Math.random(),
-    y: Math.random(),
-    z: 0.15 + Math.random() * 0.85,
-    tw: Math.random() * Math.PI * 2,
-    twSpeed: 0.6 + Math.random() * 1.4,
-    hue: Math.random() < 0.16 ? 0.85 : Math.random() < 0.12 ? 0.55 : 0.62,
-  }));
+  // Milky Way band geometry — a diagonal swath the whole scene is built around,
+  // so the sky reads as a designed vista even with zero gestures active.
+  const MW_ANGLE = -0.34;
+  const MW_COS = Math.cos(MW_ANGLE);
+  const MW_SIN = Math.sin(MW_ANGLE);
 
-  /** slow drifting background nebula clouds — soft, low-alpha, additive */
-  const nebulaBlobs = Array.from({ length: 12 }, (_, i) => ({
-    x: Math.random(),
-    y: Math.random() * 0.85,
-    r: 0.16 + Math.random() * 0.26,
-    seed: i * 11.7 + 3.1,
-    hueA: Math.random() < 0.5 ? "120,120,255" : "170,90,220",
-    hueB: Math.random() < 0.5 ? "255,120,200" : "90,180,255",
-  }));
+  const stars = Array.from({ length: 340 }, () => {
+    const x = Math.random();
+    const y = Math.random();
+    // distance from the Milky Way band centerline (in normalized, aspect-agnostic units)
+    const bandDist = Math.abs((x - 0.5) * MW_SIN - (y - 0.42) * MW_COS);
+    const inBand = Math.random() < Math.max(0, 0.85 - bandDist * 4.2);
+    const roll = Math.random();
+    return {
+      x,
+      y,
+      z: 0.15 + Math.random() * 0.85,
+      tw: Math.random() * Math.PI * 2,
+      twSpeed: 0.6 + Math.random() * 1.4,
+      hue: roll < 0.14 ? 0.85 : roll < 0.26 ? 0.55 : roll < 0.36 ? 0.1 : 0.62,
+      boost: inBand ? 1.5 + Math.random() * 0.8 : 1,
+    };
+  });
+
+  /** slow drifting background nebula clouds — soft but visible, additive.
+   * Each blob is a small cluster of overlapping soft puffs (computed once
+   * here, not per-frame) so the silhouette reads as organic gas instead of
+   * one flat gradient disc or a hard-edged polygon. */
+  const nebulaBlobs = Array.from({ length: 16 }, (_, i) => {
+    const pairs = [
+      ["130,130,255", "255,120,200"],
+      ["170,90,220", "90,180,255"],
+      ["255,150,90", "255,90,160"],
+      ["90,220,210", "150,110,255"],
+    ];
+    const [hueA, hueB] = pairs[i % pairs.length];
+    const puffs = Array.from({ length: 5 }, (_, k) => ({
+      ang: (k / 5) * Math.PI * 2 + Math.random() * 0.6,
+      dist: k === 0 ? 0 : 0.22 + Math.random() * 0.42,
+      rad: k === 0 ? 0.62 + Math.random() * 0.18 : 0.32 + Math.random() * 0.22,
+      warm: Math.random() < 0.5,
+    }));
+    return {
+      x: Math.random(),
+      y: Math.random() * 0.9,
+      r: 0.14 + Math.random() * 0.3,
+      seed: i * 11.7 + 3.1,
+      hueA,
+      hueB,
+      puffs,
+    };
+  });
 
   /** occasional streaking comets for idle liveliness */
   const comets = [];
@@ -59,6 +93,30 @@ export function createQuintessence() {
   let bloomW = 0;
   let bloomH = 0;
 
+  // ---- fine film-grain texture, generated once and tiled every frame ----
+  let grainCanvas = null;
+  function ensureGrain() {
+    if (grainCanvas) return grainCanvas;
+    try {
+      const size = 128;
+      grainCanvas = document.createElement("canvas");
+      grainCanvas.width = size;
+      grainCanvas.height = size;
+      const gctx = grainCanvas.getContext("2d");
+      const img = gctx.createImageData(size, size);
+      for (let i = 0; i < img.data.length; i += 4) {
+        img.data[i] = 255;
+        img.data[i + 1] = 255;
+        img.data[i + 2] = 255;
+        img.data[i + 3] = Math.random() * 42;
+      }
+      gctx.putImageData(img, 0, 0);
+    } catch {
+      grainCanvas = null;
+    }
+    return grainCanvas;
+  }
+
   function ensureBloom(W, H) {
     const w = Math.max(2, Math.round(W * BLOOM_SCALE));
     const h = Math.max(2, Math.round(H * BLOOM_SCALE));
@@ -81,11 +139,29 @@ export function createQuintessence() {
     if (!bloomCanvas) return;
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
-    ctx.globalAlpha = strength;
-    try {
-      ctx.filter = `blur(${Math.max(2, bloomW * 0.05).toFixed(1)}px)`;
-    } catch {}
     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    const blurPx = Math.max(2, bloomW * 0.05);
+    const fringe = Math.max(1.2, blurPx * 0.32);
+
+    // tasteful chromatic-bloom fringing: warm/cool hue-shifted copies offset a
+    // couple px either side of the main glow, cheap Canvas2D stand-in for a
+    // true per-channel split — reads as a premium halo, not a filter demo.
+    try {
+      ctx.filter = `blur(${blurPx.toFixed(1)}px) hue-rotate(-22deg) saturate(2.4)`;
+    } catch {}
+    ctx.globalAlpha = strength * 0.2;
+    ctx.drawImage(bloomCanvas, 0, 0, bloomW, bloomH, fringe, 0, W, H);
+
+    try {
+      ctx.filter = `blur(${blurPx.toFixed(1)}px) hue-rotate(26deg) saturate(2.4)`;
+    } catch {}
+    ctx.globalAlpha = strength * 0.2;
+    ctx.drawImage(bloomCanvas, 0, 0, bloomW, bloomH, -fringe, 0, W, H);
+
+    try {
+      ctx.filter = `blur(${blurPx.toFixed(1)}px)`;
+    } catch {}
+    ctx.globalAlpha = strength;
     ctx.drawImage(bloomCanvas, 0, 0, bloomW, bloomH, 0, 0, W, H);
     ctx.filter = "none";
     ctx.restore();
@@ -333,7 +409,10 @@ export function createQuintessence() {
   }
 
   function drawNebulaClouds(ctx, bctx, W, H) {
-    // soft, slow-drifting colored gas — kept low-alpha so AR camera reads through
+    // soft, slow-drifting colored gas — each blob is a cluster of overlapping
+    // soft-edged puffs (no hard silhouette) so it reads as painterly gas
+    // rather than a flat gradient disc. Kept additive/low-alpha so an AR
+    // camera feed still reads through.
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
     for (const b of nebulaBlobs) {
@@ -343,19 +422,49 @@ export function createQuintessence() {
       const y = (b.y + ny) * H;
       const r = Math.min(W, H) * b.r;
       const pulse = 0.85 + 0.15 * Math.sin(gravPhase * 0.3 + b.seed);
-      const g = ctx.createRadialGradient(x, y, 0, x, y, r * pulse);
-      g.addColorStop(0, `rgba(${b.hueA},0.05)`);
-      g.addColorStop(0.5, `rgba(${b.hueB},0.035)`);
-      g.addColorStop(1, "rgba(10,8,30,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(x, y, r * pulse, 0, Math.PI * 2);
-      ctx.fill();
+      const rr = r * pulse;
+
+      for (const p of b.puffs) {
+        const px = x + Math.cos(p.ang) * rr * p.dist;
+        const py = y + Math.sin(p.ang) * rr * p.dist * 0.85;
+        const pr = rr * p.rad;
+        const [near, far] = p.warm ? [b.hueA, b.hueB] : [b.hueB, b.hueA];
+        const g = ctx.createRadialGradient(px, py, 0, px, py, pr);
+        g.addColorStop(0, `rgba(${near},0.12)`);
+        g.addColorStop(0.55, `rgba(${far},0.06)`);
+        g.addColorStop(1, "rgba(10,8,30,0)");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(px, py, pr, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (bctx) glow(bctx, x, y, rr * 0.65, b.hueA, 0.14);
     }
     ctx.restore();
   }
 
-  function drawStarfield(ctx, W, H, pull, cx, cy) {
+  /** soft diagonal glow swath behind the starfield — a Milky Way band so the
+   * idle sky reads as a designed vista instead of empty black. Cheap: one
+   * rotated linear-gradient rect, no per-star cost. */
+  function drawMilkyWayBand(ctx, W, H) {
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    ctx.translate(W * 0.5, H * 0.42);
+    ctx.rotate(MW_ANGLE);
+    const halfW = Math.max(W, H) * 0.17;
+    const len = Math.max(W, H) * 1.7;
+    const drift = Math.sin(gravPhase * 0.05) * halfW * 0.08;
+    const g = ctx.createLinearGradient(0, -halfW + drift, 0, halfW + drift);
+    g.addColorStop(0, "rgba(150,165,255,0)");
+    g.addColorStop(0.5, "rgba(205,215,255,0.1)");
+    g.addColorStop(1, "rgba(150,165,255,0)");
+    ctx.fillStyle = g;
+    ctx.fillRect(-len / 2, -halfW * 1.4, len, halfW * 2.8);
+    ctx.restore();
+  }
+
+  function drawStarfield(ctx, bctx, W, H, pull, cx, cy) {
     for (const s of stars) {
       const tw = 0.4 + 0.6 * (0.5 + 0.5 * noise2D(s.tw, gravPhase * 0.5 * s.twSpeed));
       // gentle idle drift so the sky feels alive even with no gesture
@@ -372,14 +481,25 @@ export function createQuintessence() {
         x -= (cx - x) * push * (0.1 + s.z * 0.16);
         y -= (cy - y) * push * (0.1 + s.z * 0.16);
       }
-      const r = (0.7 + s.z * 2.2) * (1 + Math.abs(pull) * 0.45);
-      const a = 0.22 + tw * 0.65 * s.z;
-      if (s.hue > 0.7) ctx.fillStyle = `rgba(255,190,230,${a})`;
-      else if (s.hue > 0.58) ctx.fillStyle = `rgba(170,230,255,${a})`;
-      else ctx.fillStyle = `rgba(220,235,255,${a})`;
+      // Milky-Way-band stars (boost > 1) render bigger/brighter so the band
+      // reads as a dense river of light rather than uniform scatter.
+      const boost = s.boost || 1;
+      const r = (0.7 + s.z * 2.2) * (1 + Math.abs(pull) * 0.45) * (0.55 + Math.sqrt(boost) * 0.45);
+      const a = Math.min(0.95, (0.22 + tw * 0.65 * s.z) * (0.6 + boost * 0.4));
+      let rgb;
+      if (s.hue < 0.2) rgb = "255,214,150";
+      else if (s.hue > 0.7) rgb = "255,190,230";
+      else if (s.hue > 0.58) rgb = "170,230,255";
+      else rgb = "220,235,255";
+      ctx.fillStyle = `rgba(${rgb},${a})`;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       ctx.fill();
+      // Milky-Way and bright stars kick a touch of glow into the bloom
+      // layer too — the difference between "drawn dots" and a lit sky.
+      if (bctx && (boost > 1.15 || (s.z > 0.85 && tw > 0.55))) {
+        glow(bctx, x, y, r * 4.2, rgb, Math.min(0.5, a * 0.55));
+      }
       // brightest stars get a tiny four-point sparkle glint
       if (s.z > 0.82 && tw > 0.75) {
         ctx.save();
@@ -497,6 +617,37 @@ export function createQuintessence() {
       ctx.stroke();
     }
 
+    // vortex streak field — a dense sheaf of fine, slightly spiraling
+    // inbound lines, like light/matter pouring into the well. Reference:
+    // swirling particle-tunnel photography. Grows denser as pull strengthens.
+    ctx.save();
+    ctx.globalCompositeOperation = "lighter";
+    const streakCount = Math.round(30 + pull * 50);
+    for (let i = 0; i < streakCount; i++) {
+      const seed = i * 12.9898;
+      const baseA = (i / streakCount) * Math.PI * 2 + fbm2D(seed, 0, 2) * 0.6;
+      const speed = 0.5 + ((i * 37) % 10) / 10 * 0.9;
+      const a0 = baseA + gravPhase * speed;
+      const r0v = R * (1.15 + ((i * 17) % 10) / 10 * 0.6);
+      const r1v = R * (0.1 + ((i * 23) % 7) / 7 * 0.12);
+      const bend = fbm2D(seed + 5, gravPhase * 0.15, 2) * 0.5;
+      const steps = 5;
+      ctx.beginPath();
+      for (let s = 0; s <= steps; s++) {
+        const t = s / steps;
+        const rr = r0v + (r1v - r0v) * t;
+        const a = a0 + bend * t * t;
+        const x = cx + Math.cos(a) * rr;
+        const y = cy + Math.sin(a) * rr * 0.86;
+        if (s === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      }
+      const alpha = (0.08 + pull * 0.24) * (0.5 + 0.5 * Math.sin(seed + gravPhase * 2));
+      ctx.strokeStyle = `rgba(220,235,255,${alpha})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+    ctx.restore();
+
     if (bctx) glow(bctx, cx, cy, R * 0.9, "170,210,255", 0.55 * pull);
   }
 
@@ -560,7 +711,9 @@ export function createQuintessence() {
   }
 
   function drawOrbits(ctx, bctx, W, H) {
-    for (const o of orbits) {
+    const pts = orbits.length ? new Array(orbits.length) : null;
+    for (let i = 0; i < orbits.length; i++) {
+      const o = orbits[i];
       const a = Math.max(0, o.life / o.max);
       const x = (o.cx + Math.cos(o.a) * o.r) * W;
       const y = (o.cy + Math.sin(o.a) * o.r * 0.72) * H;
@@ -579,6 +732,40 @@ export function createQuintessence() {
       ctx.arc(x, y, o.size * (0.7 + a), 0, Math.PI * 2);
       ctx.fill();
       if (bctx && a > 0.5) glow(bctx, x, y, o.size * 5, o.glowRgb, 0.35 * a);
+      if (pts) pts[i] = { x, y, a, glowRgb: o.glowRgb };
+    }
+
+    // constellation web — thin lines between nearby fresh particles, like an
+    // energy-network flickering across the accretion/expansion field.
+    // Bounded-window scan (not full O(n^2)) so cost stays flat regardless of
+    // how many particles are alive. Reference: particle-network "electric"
+    // connection effects.
+    if (pts && pts.length > 6) {
+      const maxDist = Math.min(W, H) * 0.07;
+      ctx.save();
+      ctx.globalCompositeOperation = "lighter";
+      for (let i = 0; i < pts.length; i += 2) {
+        const p1 = pts[i];
+        if (p1.a < 0.35) continue;
+        const end = Math.min(i + 9, pts.length);
+        for (let j = i + 1; j < end; j++) {
+          const p2 = pts[j];
+          if (p2.a < 0.35) continue;
+          const dx = p1.x - p2.x, dy = p1.y - p2.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 > maxDist * maxDist) continue;
+          const d = Math.sqrt(d2);
+          const alpha = (1 - d / maxDist) * Math.min(p1.a, p2.a) * 0.4;
+          if (alpha < 0.02) continue;
+          ctx.strokeStyle = `rgba(${p1.glowRgb},${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
     }
   }
 
@@ -757,6 +944,52 @@ export function createQuintessence() {
         ctx.stroke();
         if (bctx) glow(bctx, p.x, p.y, 14, "200,240,255", 0.5);
       }
+
+      // holographic HUD accents — a slow scan sweep plus a couple of
+      // leader-line/bracket callouts, echoing sci-fi anatomy-scan overlays
+      // (cyan primary, a touch of red for contrast against the veil's blue/violet).
+      if (P.length >= 3) {
+        const boundsMinY = Math.min(...P.map((p) => p.y));
+        const boundsMaxY = Math.max(...P.map((p) => p.y));
+        const boundsMinX = Math.min(...P.map((p) => p.x));
+        const boundsMaxX = Math.max(...P.map((p) => p.x));
+        const sweepT = 0.5 + 0.5 * Math.sin(gravPhase * 0.9 + cx * 0.001);
+        const sweepY = boundsMinY + (boundsMaxY - boundsMinY) * sweepT;
+        ctx.save();
+        ctx.globalCompositeOperation = "lighter";
+        ctx.strokeStyle = "rgba(140,230,255,0.32)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(boundsMinX - 10, sweepY);
+        ctx.lineTo(boundsMaxX + 10, sweepY);
+        ctx.stroke();
+        ctx.restore();
+
+        const leaderIdx = [0, Math.floor(P.length / 2)];
+        const leaderColor = ["140,230,255", "255,110,110"];
+        leaderIdx.forEach((idx, li) => {
+          const p = P[idx % P.length];
+          const outAng = Math.atan2(p.y - cy, p.x - cx);
+          const legLen = 26 + (li % 2) * 10;
+          const ex = p.x + Math.cos(outAng) * legLen;
+          const ey = p.y + Math.sin(outAng) * legLen;
+          const perpAng = outAng + Math.PI / 2;
+          ctx.save();
+          ctx.globalCompositeOperation = "lighter";
+          ctx.strokeStyle = `rgba(${leaderColor[li % leaderColor.length]},0.55)`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(ex, ey);
+          ctx.lineTo(ex + Math.cos(perpAng) * 10, ey + Math.sin(perpAng) * 10);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, 5.5, 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
       if (bctx) glow(bctx, cx, cy, Math.min(W, H) * 0.22, "180,220,255", 0.5 + etherPulse * 0.25);
     }
   }
@@ -803,8 +1036,9 @@ export function createQuintessence() {
     const cy = mid ? mid.y * H : H * 0.5;
 
     drawNebulaClouds(ctx, bctx, W, H);
+    drawMilkyWayBand(ctx, W, H);
     const starPull = pull > 0.05 ? pull : spread > 0.05 ? -spread : 0;
-    drawStarfield(ctx, W, H, starPull, cx, cy);
+    drawStarfield(ctx, bctx, W, H, starPull, cx, cy);
     drawComets(ctx, W, H);
     drawGravityWell(ctx, bctx, cx, cy, pull, W, H);
     drawExpansion(ctx, bctx, cx, cy, spread, W, H);
@@ -847,7 +1081,43 @@ export function createQuintessence() {
     }
 
     // composite the accumulated bloom layer once, additively
-    compositeBloom(ctx, W, H, 0.6);
+    compositeBloom(ctx, W, H, 0.74);
+
+    // subtle cinematic color-grade + vignette — keeps the frame from reading
+    // as flat/underlit while staying low enough not to muddy the AR feed.
+    ctx.save();
+    const vg = ctx.createRadialGradient(
+      W * 0.5, H * 0.5, Math.min(W, H) * 0.28,
+      W * 0.5, H * 0.5, Math.max(W, H) * 0.72
+    );
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, "rgba(4,2,14,0.4)");
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "overlay";
+    ctx.globalAlpha = 0.1;
+    const grade = ctx.createLinearGradient(0, 0, W, H);
+    grade.addColorStop(0, "rgba(90,120,255,1)");
+    grade.addColorStop(1, "rgba(255,120,170,1)");
+    ctx.fillStyle = grade;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+
+    // fine animated grain — cheap tiled noise, adds a "shot on glass"
+    // texture instead of a flat digital-clean render
+    const grain = ensureGrain();
+    if (grain) {
+      ctx.save();
+      ctx.globalCompositeOperation = "overlay";
+      ctx.globalAlpha = 0.05;
+      const pat = ctx.createPattern(grain, "repeat");
+      if (pat) {
+        ctx.fillStyle = pat;
+        ctx.translate((gravPhase * 37) % grain.width, (gravPhase * 53) % grain.height);
+        ctx.fillRect(-grain.width, -grain.height, W + grain.width * 2, H + grain.height * 2);
+      }
+      ctx.restore();
+    }
 
     if (snap?.showHud !== false) {
       let mode = "ETHER FIELD · 우주";

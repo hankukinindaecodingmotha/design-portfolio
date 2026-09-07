@@ -2057,7 +2057,16 @@ function drawFrame(now, landmarksList) {
     );
     /* vignette/cloud wash removed for effect visibility */
   } else {
-    ctx.fillStyle = "#08060f";
+    // soft off-center glow instead of a flat fill — keeps the electric FX's
+    // dark backdrop but reads as designed rather than an empty void.
+    const bgGlow = ctx.createRadialGradient(
+      w * 0.5, h * 0.4, Math.min(w, h) * 0.06,
+      w * 0.5, h * 0.5, Math.max(w, h) * 0.78
+    );
+    bgGlow.addColorStop(0, "#161029");
+    bgGlow.addColorStop(0.45, "#0d0a1c");
+    bgGlow.addColorStop(1, "#050308");
+    ctx.fillStyle = bgGlow;
     ctx.fillRect(0, 0, w, h);
   }
 
