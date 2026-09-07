@@ -261,13 +261,18 @@ button {
   border: 1px solid rgba(167, 139, 250, 0.35);
 }
 
-#stage.mode-ar-fx #legend,
+/* AR: HUD 문구만 숨기고 제스처 가이드는 유지 */
 #stage.mode-ar-fx #hud {
   display: none !important;
 }
 
+#stage.mode-ar-fx #legend {
+  display: block;
+  opacity: 0.92;
+}
+
 #stage.mode-ar-fx #mode-bar {
-  opacity: 0.35;
+  opacity: 0.85;
   transition: opacity 0.2s;
 }
 
