@@ -99,10 +99,10 @@ const VIEW_MODES = {
     label: "AR",
     camera: true,
     effects: true,
-    joints: true,
+    joints: false,
     landmarkDebug: false,
     autoFx: false,
-    hint: "카메라 위 오버레이 · 손 제스처 이펙트",
+    hint: "카메라 + 이펙트만 · 스켈레톤/가이드 숨김",
   },
   track: {
     id: "track",
@@ -1438,12 +1438,9 @@ function detectCrossLink(players) {
   if (players.length < 2) return null;
   const pair = nearestCrossPair(players);
   if (!pair) return null;
-  const { a, b, dist } = pair;
+  const { dist } = pair;
+  // 하이파이브만 — 거리만으로 versus/duo_field 오인식 제거
   if (dist < 0.12) return "highfive";
-  const openA = a.pose === POSES.OPEN_PALM;
-  const openB = b.pose === POSES.OPEN_PALM;
-  if (openA && openB && dist < 0.45) return "duo_field";
-  if (dist < 0.5) return "versus";
   return null;
 }
 
@@ -1453,28 +1450,22 @@ function sortedHands() {
   return [...state.hands].sort((a, b) => a.palmX - b.palmX);
 }
 
-/** 양손 포즈 콤보 판별 */
+/** 양손 포즈 콤보 — 구분 명확한 4종만 */
 function detectDuoCombo(left, right) {
   const lp = left.pose;
   const rp = right.pose;
   if (left.pinching && right.pinching) return "tether";
   if (lp === POSES.POINT && rp === POSES.POINT) return "point_link";
   if (lp === POSES.PEACE && rp === POSES.PEACE) return "cross_laser";
-  if (
-    (lp === POSES.FIST && rp === POSES.OPEN_PALM) ||
-    (rp === POSES.FIST && lp === POSES.OPEN_PALM)
-  ) return "push";
   if (lp === POSES.OPEN_PALM && rp === POSES.OPEN_PALM) return "field";
-  return "bridge";
+  return null;
 }
 
 const DUO_LABELS = {
   tether: "🔗 양손 핀치 — 에너지 끈",
   point_link: "☝️☝️ 양손 가리키기 — 연결 빔",
   cross_laser: "✌️✌️ 더블 브이 — 교차 레이저",
-  push: "✊🖐 주먹+손바닥 — 밀어내기",
   field: "🖐🖐 양손 펼침 — 힘의 장",
-  bridge: "🤲 양손 연결 — 에너지 브릿지",
 };
 
 const LEGEND_SOLO = [
@@ -1491,19 +1482,10 @@ const LEGEND_DUO = [
   { key: "tether", hand: "🤏🤏", ico: "🔗", label: IS_QUINT ? "양손 핀치 · 중력끈" : "양손 핀치 · 끈" },
   { key: "point_link", hand: "☝️☝️", ico: "✨", label: IS_QUINT ? "양손 포인트 · 별다리" : "양손 포인트 · 연결" },
   { key: "cross_laser", hand: "✌️✌️", ico: "🔥", label: IS_QUINT ? "더블 브이 · 교차 플레어" : "더블 브이 · 교차 레이저" },
-  { key: "push", hand: "✊🖐", ico: "🪨", label: IS_QUINT ? "주먹+손바닥 · 지각 밀기" : "주먹+손바닥 · 밀기" },
-  { key: "storm", hand: "🤘🤘", ico: "⚡", label: IS_QUINT ? "더블 락 · 태양폭풍" : "더블 락 · 폭풍" },
   { key: "field", hand: "🖐🖐", ico: "🌬", label: IS_QUINT ? "양손 펼침 · 대기장" : "양손 펼침 · 힘의 장" },
-  { key: "rainbow_bridge", hand: "🙌🙌", ico: "🌈", label: IS_QUINT ? "더블 재즈 · 오로라교" : "더블 재즈 · 무지개 다리" },
-  { key: "cheer", hand: "👍👍", ico: "🚀", label: IS_QUINT ? "더블 좋아요 · 발진" : "더블 좋아요 · 환호" },
-  { key: "bridge", hand: "🤲", ico: "🌌", label: IS_QUINT ? "양손 연결 · 에테르 브릿지" : "양손 연결 · 브릿지" },
   { key: "heart", hand: "🫶", ico: "❤️", label: IS_QUINT ? "하트 · 제5원소 각성" : "하트 · 사랑의 빛" },
   { key: "together", hand: "🙏", ico: IS_QUINT ? "🌑" : "✨", label: IS_QUINT ? "합장 · 블랙홀" : "합장 · 소용돌이" },
   { key: "spread", hand: "👐", ico: IS_QUINT ? "🌌" : "⚡", label: IS_QUINT ? "벌림 · 우주 팽창" : "벌림 · 번개" },
-  { key: "clap", hand: "👏", ico: "💫", label: IS_QUINT ? "박수 · 초신성" : "박수 · 플래시" },
-  { key: "highfive", hand: "🙌", ico: "🙌", label: "2인 하이파이브" },
-  { key: "versus", hand: "👊👊", ico: "⚡", label: IS_QUINT ? "2인 원소 대결" : "2인 대결 브릿지" },
-  { key: "duo_field", hand: "🖐🖐", ico: "🌐", label: IS_QUINT ? "2인 궤도 링" : "2인 전기 링" },
 ];
 
 function legendIcoHtml(item) {
@@ -1867,6 +1849,7 @@ function setViewMode(modeId) {
   });
   stage?.classList.toggle("mode-track", mode.id === "track");
   stage?.classList.toggle("mode-test", mode.id === "test");
+  stage?.classList.toggle("mode-ar-fx", mode.id === "ar");
   setStatus(`${mode.label} 모드`);
   try {
     const u = new URL(location.href);
@@ -2068,6 +2051,7 @@ function quintSnapshot() {
     pose,
     hands: state.hands,
     tipHulls: state.liveTipHulls,
+    showHud: state.viewMode !== "ar" && state.viewMode !== "fx",
   };
 }
 
@@ -2128,7 +2112,7 @@ function drawFrame(now, landmarksList) {
           const cy = ((a.palmY + b.palmY) / 2) * h - 30;
           drawHeartShape(cx, cy, 40 + state.heartPulse * 30, 0.7);
         }
-        if (state.players.length >= 2) drawPlayerLabel(pl, w, h);
+        if (state.players.length >= 2 && state.showJoints) drawPlayerLabel(pl, w, h);
       }
 
       state.hands.forEach((hand) => {
@@ -2147,12 +2131,14 @@ function drawFrame(now, landmarksList) {
       });
     }
 
-    ctx.fillStyle = "rgba(200,200,220,0.5)";
-    ctx.font = "12px sans-serif";
-    const playerHint = state.players.length >= 2
-      ? ` · 👥${state.players.length}명/${state.hands.length}손`
-      : (state.hands.length ? ` · 손${state.hands.length}` : "");
-    ctx.fillText(`QUINTESSENCE${playerHint}`, 16, h - 16);
+    if (state.viewMode !== "ar" && state.viewMode !== "fx") {
+      ctx.fillStyle = "rgba(200,200,220,0.5)";
+      ctx.font = "12px sans-serif";
+      const playerHint = state.players.length >= 2
+        ? ` · 👥${state.players.length}명/${state.hands.length}손`
+        : (state.hands.length ? ` · 손${state.hands.length}` : "");
+      ctx.fillText(`QUINTESSENCE${playerHint}`, 16, h - 16);
+    }
 
     if (!state.arMode && video.videoWidth > 0) {
       const pipW = 200, pipH = 150;
@@ -2233,13 +2219,13 @@ function drawFrame(now, landmarksList) {
         drawElectricArc(a.palmX * w, a.palmY * h, b.palmX * w, b.palmY * h, handHue(a) + 0.45, 9, 14);
         drawElectricArc(a.palmX * w, a.palmY * h, b.palmX * w, b.palmY * h, handHue(b) + 0.55, 7, 10);
       }
-      if (state.players.length >= 2) drawPlayerLabel(pl, w, h);
+      if (state.players.length >= 2 && state.showJoints) drawPlayerLabel(pl, w, h);
     }
 
     state.hands.forEach((hand, idx) => {
       const hue = handHue(hand);
       const px = hand.palmX * w, py = hand.palmY * h;
-      if (hand.pose !== POSES.FIST) {
+      if (hand.pose !== POSES.FIST && state.viewMode !== "ar" && state.viewMode !== "fx") {
         drawOrb(px, py, 5 + hand.openness * 6, hue, 0.28);
       }
       const lm = landmarksList?.[hand.index];
@@ -2286,14 +2272,16 @@ function drawFrame(now, landmarksList) {
 
   // particles / joint sparks disabled
 
-  ctx.fillStyle = "rgba(200,200,220,0.5)";
-  ctx.font = "12px sans-serif";
-  const curlHint = state.hands[0]?.joints
-    ? ` · curl ${Math.round(state.hands[0].joints.avgCurl * 100)}%`
-    : "";
-  const arHint = state.arMode ? "AR · " : "";
-  const playerHint = state.players.length >= 2 ? ` · 👥${state.players.length}명/${state.hands.length}손` : (state.hands.length ? ` · 손${state.hands.length}` : "");
-  ctx.fillText(`${arHint}MODE: ${VISUAL_MODES[state.visualMode]}${playerHint}${curlHint}`, 16, h - 16);
+  if (state.viewMode !== "ar" && state.viewMode !== "fx") {
+    ctx.fillStyle = "rgba(200,200,220,0.5)";
+    ctx.font = "12px sans-serif";
+    const curlHint = state.hands[0]?.joints
+      ? ` · curl ${Math.round(state.hands[0].joints.avgCurl * 100)}%`
+      : "";
+    const arHint = state.arMode ? "AR · " : "";
+    const playerHint = state.players.length >= 2 ? ` · 👥${state.players.length}명/${state.hands.length}손` : (state.hands.length ? ` · 손${state.hands.length}` : "");
+    ctx.fillText(`${arHint}MODE: ${VISUAL_MODES[state.visualMode]}${playerHint}${curlHint}`, 16, h - 16);
+  }
 
   // AR 모드에서는 영상이 배경이라 PIP 불필요
   if (!state.arMode && video.videoWidth > 0) {
@@ -2569,8 +2557,6 @@ function processHands(landmarksList, handednessList, now) {
   } else if (players.length >= 2) {
     const nHands = state.hands.length;
     if (cross === "highfive") setStatus("🙌 2인 하이파이브!");
-    else if (cross === "duo_field") setStatus("🌐 2인 전기 링");
-    else if (cross === "versus") setStatus("⚡ 2인 대결 브릿지");
     else setStatus(`👥 2명 모드 · 손 ${nHands}개`);
   } else if (players.length === 1 && players[0].hands.length === 2) {
     const pl = players[0];

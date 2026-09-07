@@ -893,15 +893,17 @@ export function createQuintessence() {
     // composite the accumulated bloom layer once, additively
     compositeBloom(ctx, W, H, 0.6);
 
-    let mode = "ETHER FIELD · 우주";
-    if (pull > 0.4) mode = "GRAVITY WELL — 🙏 양손 모으기";
-    else if (spread > 0.4) mode = "NEBULA EXPANSION — 👐 양손 벌리기";
-    else if (snap?.pose === "fist") mode = "EARTH RUPTURE — ✊↓ 파기";
-    else if (snap?.tipHulls?.length) mode = "ETHER VEIL — 🖖 손끝 벌리기";
-    else if (snap?.pose) mode = String(snap.pose).replace(/_/g, " ").toUpperCase();
-    ctx.fillStyle = "rgba(210,230,255,0.88)";
-    ctx.font = "600 13px ui-sans-serif, system-ui, sans-serif";
-    ctx.fillText(mode, 16, 28);
+    if (snap?.showHud !== false) {
+      let mode = "ETHER FIELD · 우주";
+      if (pull > 0.4) mode = "GRAVITY WELL — 🙏 양손 모으기";
+      else if (spread > 0.4) mode = "NEBULA EXPANSION — 👐 양손 벌리기";
+      else if (snap?.pose === "fist") mode = "EARTH RUPTURE — ✊↓ 파기";
+      else if (snap?.tipHulls?.length) mode = "ETHER VEIL — 🖖 손끝 벌리기";
+      else if (snap?.pose) mode = String(snap.pose).replace(/_/g, " ").toUpperCase();
+      ctx.fillStyle = "rgba(210,230,255,0.88)";
+      ctx.font = "600 13px ui-sans-serif, system-ui, sans-serif";
+      ctx.fillText(mode, 16, 28);
+    }
 
     ctx.restore();
   }

@@ -261,8 +261,19 @@ button {
   border: 1px solid rgba(167, 139, 250, 0.35);
 }
 
-#test-panel[hidden] {
+#stage.mode-ar-fx #legend,
+#stage.mode-ar-fx #hud {
   display: none !important;
+}
+
+#stage.mode-ar-fx #mode-bar {
+  opacity: 0.35;
+  transition: opacity 0.2s;
+}
+
+#stage.mode-ar-fx #mode-bar:hover,
+#stage.mode-ar-fx #mode-bar:focus-within {
+  opacity: 1;
 }
 
 #test-panel button {
