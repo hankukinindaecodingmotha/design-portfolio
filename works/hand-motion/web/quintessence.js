@@ -623,119 +623,71 @@ export function createQuintessence() {
 
   function drawPoseCosmos(ctx, bctx, pose, hands, W, H) {
     if (!pose || !hands?.length) return;
+    const S = 1.75; // 한 손 이펙트 가시성 부스트
     const cx = hands.reduce((s, h) => s + h.palmX, 0) / hands.length * W;
     const cy = hands.reduce((s, h) => s + h.palmY, 0) / hands.length * H;
 
-    if (pose === "ok") {
-      for (let i = 0; i < 6; i++) {
-        const a = gravPhase * 1.5 + i * ((Math.PI * 2) / 6);
-        const r = 30 + i * 14;
-        ctx.strokeStyle = `rgba(160,210,255,${0.4 + etherPulse * 0.4})`;
-        ctx.lineWidth = 2.2;
+    if (pose === "pinch" || pose === "ok") {
+      for (let i = 0; i < 7; i++) {
+        const a = gravPhase * 1.5 + i * ((Math.PI * 2) / 7);
+        const r = (36 + i * 18) * S;
+        ctx.strokeStyle = `rgba(160,210,255,${0.5 + etherPulse * 0.4})`;
+        ctx.lineWidth = 3.2;
         ctx.beginPath();
         ctx.arc(cx, cy, r, a, a + Math.PI * 1.35);
         ctx.stroke();
       }
-      if (bctx) glow(bctx, cx, cy, 90, "170,210,255", 0.4 + etherPulse * 0.3);
+      if (bctx) glow(bctx, cx, cy, 130 * S, "170,210,255", 0.5 + etherPulse * 0.35);
     } else if (pose === "fist") {
-      ctx.fillStyle = `rgba(170,110,55,${0.28 + etherPulse * 0.3})`;
+      ctx.fillStyle = `rgba(170,110,55,${0.35 + etherPulse * 0.35})`;
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 22, 88, 34, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy + 28 * S, 120 * S, 48 * S, 0, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = `rgba(220,160,90,${0.5})`;
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = `rgba(220,160,90,${0.7})`;
+      ctx.lineWidth = 3.5;
       ctx.beginPath();
-      ctx.moveTo(cx - 70, cy + 10);
-      ctx.lineTo(cx + 70, cy + 18);
+      ctx.moveTo(cx - 100 * S, cy + 14 * S);
+      ctx.lineTo(cx + 100 * S, cy + 24 * S);
       ctx.stroke();
-    } else if (pose === "shaka") {
-      ctx.strokeStyle = `rgba(90,200,255,${0.55})`;
-      ctx.lineWidth = 3;
-      for (let i = 0; i < hands.length; i++) {
-        const h = hands[i];
-        const hx = h.palmX * W;
-        const hy = h.palmY * H;
-        ctx.beginPath();
-        ctx.moveTo(hx - 48, hy);
-        // noise-driven current instead of a pure sine wave
-        const midY = hy + fbm2D(gravPhase * 0.6 + i, 2, 2) * 42;
-        ctx.quadraticCurveTo(cx, midY, hx + 48, hy);
-        ctx.stroke();
-        // small droplets riding the current
-        for (let k = 0; k < 3; k++) {
-          const t = (k + 1) / 4;
-          const dx = hx + (cx - hx) * t;
-          const dy = hy + (midY - hy) * (1 - (1 - t) * (1 - t));
-          ctx.fillStyle = `rgba(140,220,255,${0.5})`;
-          ctx.beginPath();
-          ctx.arc(dx, dy, 2.2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
+      if (bctx) glow(bctx, cx, cy + 20 * S, 140 * S, "220,150,80", 0.45);
     } else if (pose === "rock" || pose === "peace") {
-      for (const h of hands) emitDust(h.palmX, h.palmY, "rgba(255,140,60,", 3, 0.022);
-      const g = ctx.createRadialGradient(cx, cy, 4, cx, cy, 110);
-      g.addColorStop(0, `rgba(255,230,140,${0.55 * (0.45 + etherPulse)})`);
-      g.addColorStop(0.5, `rgba(255,120,40,${0.25 * (0.4 + etherPulse)})`);
+      for (const h of hands) emitDust(h.palmX, h.palmY, "rgba(255,140,60,", 5, 0.03);
+      const g = ctx.createRadialGradient(cx, cy, 6, cx, cy, 160 * S);
+      g.addColorStop(0, `rgba(255,230,140,${0.7 * (0.5 + etherPulse)})`);
+      g.addColorStop(0.45, `rgba(255,120,40,${0.35 * (0.45 + etherPulse)})`);
       g.addColorStop(1, "rgba(255,60,0,0)");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+      ctx.arc(cx, cy, 160 * S, 0, Math.PI * 2);
       ctx.fill();
-      // solar wind beams with a flickering noise-driven flame edge
       for (const h of hands) {
         const hx = h.palmX * W;
         const hy = h.palmY * H;
-        const tipX = hx + (h.palmX - 0.5) * 180 + fbm2D(gravPhase * 2, hx * 0.01, 2) * 14;
-        const tipY = hy - 120;
-        ctx.strokeStyle = `rgba(255,200,120,${0.55})`;
-        ctx.lineWidth = 2.5;
+        const tipX = hx + (h.palmX - 0.5) * 220 * S + fbm2D(gravPhase * 2, hx * 0.01, 2) * 18;
+        const tipY = hy - 160 * S;
+        ctx.strokeStyle = `rgba(255,200,120,${0.75})`;
+        ctx.lineWidth = 4.5;
+        ctx.shadowColor = "rgba(255,160,60,0.8)";
+        ctx.shadowBlur = 18;
         ctx.beginPath();
         ctx.moveTo(hx, hy);
         ctx.lineTo(tipX, tipY);
         ctx.stroke();
-        if (bctx) glow(bctx, tipX, tipY, 26, "255,170,90", 0.5);
+        ctx.shadowBlur = 0;
+        if (bctx) glow(bctx, tipX, tipY, 40 * S, "255,170,90", 0.65);
       }
-      if (bctx) glow(bctx, cx, cy, 130, "255,170,90", 0.5 * (0.45 + etherPulse));
+      if (bctx) glow(bctx, cx, cy, 180 * S, "255,170,90", 0.55 * (0.5 + etherPulse));
     } else if (pose === "open_palm") {
-      for (let i = 0; i < 10; i++) {
-        const a = gravPhase * 2.2 + i * 0.65;
-        ctx.strokeStyle = `rgba(200,235,255,${0.35})`;
-        ctx.lineWidth = 1.8;
+      for (let i = 0; i < 12; i++) {
+        const a = gravPhase * 2.2 + i * 0.55;
+        ctx.strokeStyle = `rgba(200,235,255,${0.5})`;
+        ctx.lineWidth = 2.8;
         ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * 14, cy + Math.sin(a) * 8);
-        ctx.lineTo(cx + Math.cos(a) * 120, cy + Math.sin(a) * 48 - 40);
+        ctx.moveTo(cx + Math.cos(a) * 18 * S, cy + Math.sin(a) * 10 * S);
+        ctx.lineTo(cx + Math.cos(a) * 170 * S, cy + Math.sin(a) * 70 * S - 50 * S);
         ctx.stroke();
       }
-    } else if (pose === "thumbs_up") {
-      ctx.strokeStyle = `rgba(180,230,255,${0.55})`;
-      ctx.lineWidth = 3.5;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy + 55);
-      ctx.quadraticCurveTo(cx + 28, cy, cx, cy - 90);
-      ctx.stroke();
-      emitDust(cx / W, (cy - 40) / H, "rgba(180,220,255,", 4, 0.01);
-    } else if (pose === "point") {
-      for (const h of hands) {
-        ctx.strokeStyle = `rgba(230,245,255,${0.7})`;
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(h.palmX * W, h.palmY * H);
-        ctx.lineTo(h.palmX * W, h.palmY * H - 140);
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,220,0.9)";
-        ctx.beginPath();
-        ctx.arc(h.palmX * W, h.palmY * H - 140, 4, 0, Math.PI * 2);
-        ctx.fill();
-      }
-    } else {
-      const g = ctx.createRadialGradient(cx, cy, 6, cx, cy, 110);
-      g.addColorStop(0, `rgba(210,180,255,${0.4 * (0.4 + etherPulse)})`);
-      g.addColorStop(1, "rgba(80,40,160,0)");
-      ctx.fillStyle = g;
-      ctx.beginPath();
-      ctx.arc(cx, cy, 110, 0, Math.PI * 2);
-      ctx.fill();
+      if (bctx) glow(bctx, cx, cy, 150 * S, "180,220,255", 0.4);
     }
   }
 
@@ -858,8 +810,12 @@ export function createQuintessence() {
     drawExpansion(ctx, bctx, cx, cy, spread, W, H);
     drawOrbits(ctx, bctx, W, H);
     drawSparkles(ctx, W, H);
-    drawHandBridge(ctx, snap?.hands, W, H, pull, spread);
-    drawEtherVeil(ctx, bctx, snap?.tipHulls, W, H);
+    if (snap?.showLines !== false) {
+      drawHandBridge(ctx, snap?.hands, W, H, pull, spread);
+    }
+    if (snap?.showLines !== false) {
+      drawEtherVeil(ctx, bctx, snap?.tipHulls, W, H);
+    }
     drawPoseCosmos(ctx, bctx, snap?.pose, snap?.hands, W, H);
     drawCracks(ctx);
     drawEmbers(ctx, bctx, W, H);

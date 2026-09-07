@@ -44,8 +44,8 @@ const PLAYER_SPLIT_GAP = 0.22; // 화면 X 간격이 이보다 크면 다른 사
 /** P1 왼/오, P2 왼/오 */
 const HAND_HUES = [0.58, 0.78, 0.12, 0.95];
 const PLAYER_LABELS = ["P1", "P2"];
-/** 이펙트 전체 스케일 — 너무 크면 제스처 확인이 어려움 */
-const FX_SCALE = 0.36;
+/** 이펙트 전체 스케일 — 한 손 모션이 잘 보이도록 */
+const FX_SCALE = 0.92;
 const fxS = (n) => n * FX_SCALE;
 
 const startScreen = document.getElementById("start-screen");
@@ -442,7 +442,7 @@ function drawElectricArc(x1, y1, x2, y2, hue, segs = 7, amp = 10) {
 function drawElectricCorona(cx, cy, hue, rays = 6) {
   for (let i = 0; i < rays; i++) {
     const a = (i / rays) * Math.PI * 2 + state.idlePhase * 2;
-    const len = fxS(18 + Math.random() * 14);
+    const len = fxS(48 + Math.random() * 36);
     drawElectricArc(
       cx, cy,
       cx + Math.cos(a) * len,
@@ -1256,7 +1256,7 @@ function drawPoseEffect(hand, lm, w, h) {
     for (const tip of [iTip, mTip]) {
       ctx.beginPath();
       ctx.moveTo(px, py);
-      ctx.lineTo(tip.x * w, tip.y * h - fxS(48));
+      ctx.lineTo(tip.x * w, tip.y * h - fxS(110));
       ctx.stroke();
     }
     ctx.shadowBlur = 0;
@@ -1269,8 +1269,8 @@ function drawPoseEffect(hand, lm, w, h) {
     ctx.beginPath();
     ctx.moveTo(px, py);
     ctx.lineTo(
-      tip.x * w + (tip.x - hand.palmX) * fxS(70),
-      tip.y * h + (tip.y - hand.palmY) * fxS(70),
+      tip.x * w + (tip.x - hand.palmX) * fxS(160),
+      tip.y * h + (tip.y - hand.palmY) * fxS(160),
     );
     ctx.stroke();
   }
@@ -1284,7 +1284,7 @@ function drawPoseEffect(hand, lm, w, h) {
     state.orbitAngle += 0.08;
     for (let i = 0; i < 3; i++) {
       const angle = state.orbitAngle + (i / 3) * Math.PI * 2;
-      const r = fxS(22 + i * 5);
+      const r = fxS(48 + i * 12);
       const ox = px + Math.cos(angle) * r;
       const oy = py + Math.sin(angle) * r * 0.6;
       ctx.strokeStyle = hsvColor((hue + i * 0.12) % 1, 0.9, 1, 0.85);
@@ -1296,7 +1296,7 @@ function drawPoseEffect(hand, lm, w, h) {
     ctx.strokeStyle = hsvColor(hue, 0.8, 1, 0.5);
     ctx.lineWidth = Math.max(1.2, fxS(2));
     ctx.beginPath();
-    ctx.ellipse(px, py, fxS(26), fxS(17), state.orbitAngle * 0.3, 0, Math.PI * 2);
+    ctx.ellipse(px, py, fxS(56), fxS(36), state.orbitAngle * 0.3, 0, Math.PI * 2);
     ctx.stroke();
   }
 
@@ -1450,39 +1450,21 @@ function sortedHands() {
   return [...state.hands].sort((a, b) => a.palmX - b.palmX);
 }
 
-/** 양손 포즈 콤보 — 구분 명확한 4종만 */
-function detectDuoCombo(left, right) {
-  const lp = left.pose;
-  const rp = right.pose;
-  if (left.pinching && right.pinching) return "tether";
-  if (lp === POSES.POINT && rp === POSES.POINT) return "point_link";
-  if (lp === POSES.PEACE && rp === POSES.PEACE) return "cross_laser";
-  if (lp === POSES.OPEN_PALM && rp === POSES.OPEN_PALM) return "field";
+/** 양손 포즈 콤보 — 포즈 매칭 제거(오인식). 합장·벌림·하트만 사용 */
+function detectDuoCombo(_left, _right) {
   return null;
 }
 
-const DUO_LABELS = {
-  tether: "🔗 양손 핀치 — 에너지 끈",
-  point_link: "☝️☝️ 양손 가리키기 — 연결 빔",
-  cross_laser: "✌️✌️ 더블 브이 — 교차 레이저",
-  field: "🖐🖐 양손 펼침 — 힘의 장",
-};
+const DUO_LABELS = {};
 
 const LEGEND_SOLO = [
   { key: POSES.OPEN_PALM, hand: "🖐", ico: IS_QUINT ? "🌬" : "⚡", label: IS_QUINT ? "공기 · 성운 바람" : "손바닥 · 전기 코로나" },
   { key: POSES.FIST, hand: "✊", ico: IS_QUINT ? "🪨" : "🌑", label: IS_QUINT ? "대지 · 주먹↓ 파기" : "주먹 · 수축" },
   { key: POSES.PEACE, hand: "✌️", ico: IS_QUINT ? "🔥" : "💥", label: IS_QUINT ? "불 · 태양풍 레이저" : "브이 · 레이저" },
-  { key: POSES.POINT, hand: "☝️", ico: IS_QUINT ? "✨" : "🎯", label: IS_QUINT ? "별빛 · 빔/별자리" : "가리키기 · 빔/영역" },
   { key: POSES.PINCH, hand: "🤏", ico: IS_QUINT ? "🌑" : "✅", label: IS_QUINT ? "특이점 · 확정/삭제" : "핀치 · 영역확정/삭제" },
-  { key: POSES.OK, hand: "👌", ico: IS_QUINT ? "🌌" : "🌀", label: IS_QUINT ? "에테르 · 제5원소 궤도" : "OK · 궤도" },
-  { key: POSES.SHAKA, hand: "🤙", ico: IS_QUINT ? "🌊" : "🌊", label: IS_QUINT ? "물 · 성운 해류" : "샤카 · 파도" },
 ];
 
 const LEGEND_DUO = [
-  { key: "tether", hand: "🤏🤏", ico: "🔗", label: IS_QUINT ? "양손 핀치 · 중력끈" : "양손 핀치 · 끈" },
-  { key: "point_link", hand: "☝️☝️", ico: "✨", label: IS_QUINT ? "양손 포인트 · 별다리" : "양손 포인트 · 연결" },
-  { key: "cross_laser", hand: "✌️✌️", ico: "🔥", label: IS_QUINT ? "더블 브이 · 교차 플레어" : "더블 브이 · 교차 레이저" },
-  { key: "field", hand: "🖐🖐", ico: "🌬", label: IS_QUINT ? "양손 펼침 · 대기장" : "양손 펼침 · 힘의 장" },
   { key: "heart", hand: "🫶", ico: "❤️", label: IS_QUINT ? "하트 · 제5원소 각성" : "하트 · 사랑의 빛" },
   { key: "together", hand: "🙏", ico: IS_QUINT ? "🌑" : "✨", label: IS_QUINT ? "합장 · 블랙홀" : "합장 · 소용돌이" },
   { key: "spread", hand: "👐", ico: IS_QUINT ? "🌌" : "⚡", label: IS_QUINT ? "벌림 · 우주 팽창" : "벌림 · 번개" },
@@ -2050,8 +2032,9 @@ function quintSnapshot() {
     mid,
     pose,
     hands: state.hands,
-    tipHulls: state.liveTipHulls,
+    tipHulls: state.viewMode === "ar" ? [] : state.liveTipHulls,
     showHud: state.viewMode !== "ar" && state.viewMode !== "fx",
+    showLines: state.viewMode !== "ar",
   };
 }
 
@@ -2094,7 +2077,8 @@ function drawFrame(now, landmarksList) {
 
     if (state.showEffects) {
       quint.draw(ctx, w, h, snap);
-      drawFingerTrails(w, h);
+      // AR에서는 손가락 궤적 선 숨김 — 이펙트만
+      if (state.viewMode !== "ar") drawFingerTrails(w, h);
     }
 
     if (state.clapFlash > 0) {
@@ -2110,7 +2094,7 @@ function drawFrame(now, landmarksList) {
           const [a, b] = pl.pair || pl.hands;
           const cx = ((a.palmX + b.palmX) / 2) * w;
           const cy = ((a.palmY + b.palmY) / 2) * h - 30;
-          drawHeartShape(cx, cy, 40 + state.heartPulse * 30, 0.7);
+          drawHeartShape(cx, cy, 70 + state.heartPulse * 48, 0.85);
         }
         if (state.players.length >= 2 && state.showJoints) drawPlayerLabel(pl, w, h);
       }
@@ -2181,8 +2165,8 @@ function drawFrame(now, landmarksList) {
   }
   if (IS_QUINT) drawEarthWorld(w, h);
 
-  // 손가락으로 이은 영역 필터(에테르 베일) — 파악 모드에서는 숨김
-  if (state.showEffects) {
+  // 손가락으로 이은 영역 필터(에테르 베일) — AR/파악에서는 선·필터 오버레이 최소화
+  if (state.showEffects && state.viewMode !== "ar") {
     drawFilterZones(w, h);
     drawLiveTipFilters(w, h);
     drawFingerTrails(w, h);
@@ -2207,7 +2191,7 @@ function drawFrame(now, landmarksList) {
         const [a, b] = pl.pair || pl.hands;
         const cx = ((a.palmX + b.palmX) / 2) * w;
         const cy = ((a.palmY + b.palmY) / 2) * h - 30;
-        drawHeartShape(cx, cy, 40 + state.heartPulse * 30, 0.7);
+        drawHeartShape(cx, cy, 70 + state.heartPulse * 48, 0.85);
         attractX = cx; attractY = cy;
       } else if (pl.hands.length >= 2 && pl.together) {
         const [a, b] = pl.pair || pl.hands;
@@ -2413,8 +2397,8 @@ function processHands(landmarksList, handednessList, now) {
     }
 
     const lm = landmarksList[hand.index] ?? landmarksList[idx];
-    // 핀치 rising-edge는 영역 확정/삭제보다 먼저 읽어야 함
-    if (lm) updateFingerDrawing(hand, lm, w, h, idx);
+    // AR에서는 손가락 궤적/필터 선을 만들지 않음
+    if (lm && state.viewMode !== "ar") updateFingerDrawing(hand, lm, w, h, idx);
 
     if (hand.pinching && !state.wasPinching[idx]) {
       const drawing = (state.fingerTrails[idx] || []).length >= 8;
@@ -2547,7 +2531,13 @@ function processHands(landmarksList, handednessList, now) {
   }
   state.wasCrossLink = cross;
 
-  updateLiveTipFilters(landmarksList, w, h);
+  if (state.viewMode === "ar") {
+    state.liveTipLinks = [];
+    state.liveTipHulls = [];
+    state.fingerTrails = [[], [], [], []];
+  } else {
+    updateLiveTipFilters(landmarksList, w, h);
+  }
 
   // 상태 문구
   if (statusParts.length) {
