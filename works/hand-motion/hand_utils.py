@@ -139,10 +139,10 @@ def hands_together(a: HandFeatures, b: HandFeatures, threshold: float = 0.14) ->
 
 
 def detect_pose(landmarks, openness: float, pinching: bool) -> str:
+    """활성 6종만 감지 — open_palm, fist, peace, point, pinch, ok, shaka"""
     thumb = landmarks[THUMB_TIP]
-    index_mcp = landmarks[5]
     thumb_index_dist = math.hypot(thumb.x - landmarks[INDEX_TIP].x, thumb.y - landmarks[INDEX_TIP].y)
-    if thumb_index_dist < 0.055:
+    if thumb_index_dist < 0.05:
         if all(_finger_extended(landmarks, t, p) for t, p in zip(FINGER_TIPS[1:], FINGER_PIPS[1:])):
             return "ok"
     if pinching:
@@ -153,24 +153,18 @@ def detect_pose(landmarks, openness: float, pinching: bool) -> str:
     ring_up = _finger_extended(landmarks, RING_TIP, RING_PIP)
     pinky_up = _finger_extended(landmarks, PINKY_TIP, PINKY_PIP)
     thumb_out = _thumb_extended(landmarks)
-    if fingers >= 5 and openness > 0.78:
-        return "jazz"
-    if index_up and pinky_up and not middle_up and not ring_up:
-        return "rock"
     if pinky_up and thumb_out and not index_up and not middle_up and not ring_up:
         return "shaka"
-    if index_up and middle_up and ring_up and not pinky_up and not thumb_out:
-        return "stop"
-    if fingers >= 4 and openness > 0.55:
-        return "open_palm"
-    if fingers <= 1 and openness < 0.28:
+    if fingers <= 1 and openness < 0.3:
         return "fist"
     if index_up and middle_up and not ring_up and not pinky_up:
         return "peace"
-    if index_up and not middle_up and fingers <= 2:
+    if index_up and pinky_up and not middle_up and not ring_up:
+        return "peace"
+    if index_up and not middle_up and not ring_up and not pinky_up and fingers <= 2:
         return "point"
-    if thumb.y < landmarks[WRIST].y - 0.05 and fingers <= 2 and not index_up:
-        return "thumbs_up"
+    if fingers >= 4 and openness > 0.58:
+        return "open_palm"
     return "neutral"
 
 

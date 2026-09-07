@@ -1,6 +1,9 @@
 /**
  * 손 포즈·모션 감지 및 관절(마디) 분석
  * MediaPipe 21점 랜드마크 기반
+ *
+ * 활성 포즈는 구분도 높은 6종만 사용 (정확도 우선):
+ * open_palm · fist · peace · point · pinch · ok · shaka
  */
 
 export const POSES = {
@@ -8,14 +11,15 @@ export const POSES = {
   FIST: "fist",
   PEACE: "peace",
   POINT: "point",
-  THUMBS_UP: "thumbs_up",
   PINCH: "pinch",
   OK: "ok",
+  SHAKA: "shaka",
+  NEUTRAL: "neutral",
+  // 하위 호환 — 감지하지 않음
+  THUMBS_UP: "thumbs_up",
   ROCK: "rock",
   STOP: "stop",
-  SHAKA: "shaka",
   JAZZ: "jazz",
-  NEUTRAL: "neutral",
 };
 
 const INDEX_PIP = 6;
@@ -49,14 +53,14 @@ export const BONE_CONNECTIONS = [
 ];
 
 export function fingerExtended(lm, tip, pip) {
-  return lm[tip].y < lm[pip].y - 0.015;
+  return lm[tip].y < lm[pip].y - 0.02;
 }
 
 export function countFingers(lm) {
   let n = 0;
   const thumb = lm[THUMB_TIP];
   const indexMcp = lm[INDEX_MCP];
-  if (Math.hypot(thumb.x - indexMcp.x, thumb.y - indexMcp.y) > 0.07) n++;
+  if (Math.hypot(thumb.x - indexMcp.x, thumb.y - indexMcp.y) > 0.08) n++;
   for (const [tip, pip] of [
     [INDEX_TIP, INDEX_PIP],
     [MIDDLE_TIP, MIDDLE_PIP],
@@ -71,12 +75,12 @@ export function countFingers(lm) {
 function thumbExtended(lm) {
   const thumb = lm[THUMB_TIP];
   const indexMcp = lm[INDEX_MCP];
-  return Math.hypot(thumb.x - indexMcp.x, thumb.y - indexMcp.y) > 0.07;
+  return Math.hypot(thumb.x - indexMcp.x, thumb.y - indexMcp.y) > 0.08;
 }
 
 function isOkSign(lm) {
   const d = Math.hypot(lm[THUMB_TIP].x - lm[INDEX_TIP].x, lm[THUMB_TIP].y - lm[INDEX_TIP].y);
-  if (d > 0.055) return false;
+  if (d > 0.05) return false;
   return (
     fingerExtended(lm, MIDDLE_TIP, MIDDLE_PIP) &&
     fingerExtended(lm, RING_TIP, RING_PIP) &&
@@ -97,7 +101,6 @@ export function jointCurl(a, b, c) {
   const lc = Math.hypot(bcx, bcy) + 1e-6;
   const cos = Math.max(-1, Math.min(1, (bax * bcx + bay * bcy) / (la * lc)));
   const angle = Math.acos(cos);
-  // 펴짐 ≈ π, 굽힘 ≈ π/2 이하
   return Math.max(0, Math.min(1, (Math.PI - angle) / (Math.PI * 0.55)));
 }
 
@@ -107,11 +110,8 @@ export function jointCurl(a, b, c) {
 export function analyzeFinger(lm, chain, wrist) {
   const pts = chain.map((i) => lm[i]);
   const curls = [];
-  // MCP: wrist → mcp → pip (thumb은 cmc→mcp→ip)
   curls.push(jointCurl(wrist, pts[0], pts[1]));
-  // PIP / IP
   curls.push(jointCurl(pts[0], pts[1], pts[2]));
-  // DIP (thumb은 tip 직전)
   if (pts.length >= 4) {
     curls.push(jointCurl(pts[1], pts[2], pts[3]));
   }
@@ -146,6 +146,7 @@ export function analyzeJoints(lm) {
   return { fingers, avgCurl, wrist };
 }
 
+/** 활성 6종만 감지 — 락/스톱/재즈/엄지는 오인식이 많아 제외 */
 export function detectPose(lm, openness, pinching) {
   if (isOkSign(lm)) return POSES.OK;
   if (pinching) return POSES.PINCH;
@@ -155,18 +156,20 @@ export function detectPose(lm, openness, pinching) {
   const middleUp = fingerExtended(lm, MIDDLE_TIP, MIDDLE_PIP);
   const ringUp = fingerExtended(lm, RING_TIP, RING_PIP);
   const pinkyUp = fingerExtended(lm, PINKY_TIP, PINKY_PIP);
-  const thumbUp = lm[THUMB_TIP].y < lm[0].y - 0.05;
   const thumbOut = thumbExtended(lm);
 
-  if (f >= 5 && openness > 0.78) return POSES.JAZZ;
-  if (indexUp && pinkyUp && !middleUp && !ringUp) return POSES.ROCK;
+  // 샤카: 엄지+새끼만 (물)
   if (pinkyUp && thumbOut && !indexUp && !middleUp && !ringUp) return POSES.SHAKA;
-  if (indexUp && middleUp && ringUp && !pinkyUp && !thumbOut) return POSES.STOP;
-  if (f >= 4 && openness > 0.55) return POSES.OPEN_PALM;
-  if (f <= 1 && openness < 0.28) return POSES.FIST;
+  // 주먹 (대지)
+  if (f <= 1 && openness < 0.3) return POSES.FIST;
+  // 브이 / 락→불로 통합 (검지+중지, 또는 검지+새끼)
   if (indexUp && middleUp && !ringUp && !pinkyUp) return POSES.PEACE;
+  if (indexUp && pinkyUp && !middleUp && !ringUp) return POSES.PEACE;
+  // 가리키기
   if (indexUp && !middleUp && !ringUp && !pinkyUp && f <= 2) return POSES.POINT;
-  if (thumbUp && f <= 2 && !indexUp) return POSES.THUMBS_UP;
+  // 손바닥 (공기)
+  if (f >= 4 && openness > 0.58) return POSES.OPEN_PALM;
+
   return POSES.NEUTRAL;
 }
 
@@ -190,13 +193,9 @@ export const POSE_LABELS = {
   [POSES.FIST]: "✊ 대지 — 중력핵 / 파기",
   [POSES.PEACE]: "✌️ 불 — 태양풍 레이저",
   [POSES.POINT]: "☝️ 별빛 — 빔/별자리",
-  [POSES.THUMBS_UP]: "👍 상승 — 궤도 탈출",
   [POSES.PINCH]: "🤏 특이점 — 확정/삭제",
   [POSES.OK]: "👌 에테르 — 제5원소 궤도",
-  [POSES.ROCK]: "🤘 화염 — 태양 벼락",
-  [POSES.STOP]: "✋ 공허 — 우주 방패",
   [POSES.SHAKA]: "🤙 물 — 성운 해류",
-  [POSES.JAZZ]: "🙌 오로라 — 스펙트럼",
   [POSES.NEUTRAL]: "",
 };
 
@@ -211,7 +210,7 @@ export const CONCEPT = {
   elements: {
     earth: { pose: POSES.FIST, label: "대지", hint: "주먹 + 아래로 파기" },
     water: { pose: POSES.SHAKA, label: "물", hint: "샤카로 해류" },
-    fire: { pose: POSES.ROCK, label: "불", hint: "락/브이 플레어" },
+    fire: { pose: POSES.PEACE, label: "불", hint: "브이로 플레어" },
     air: { pose: POSES.OPEN_PALM, label: "공기", hint: "손바닥으로 바람" },
     aether: { pose: POSES.OK, label: "에테르", hint: "OK · 4손가락 공간" },
   },
@@ -223,12 +222,8 @@ export const CLASSIC_POSE_LABELS = {
   [POSES.FIST]: "✊ 주먹 — 수축",
   [POSES.PEACE]: "✌️ 브이 — 레이저",
   [POSES.POINT]: "☝️ 가리키기 — 빔/영역",
-  [POSES.THUMBS_UP]: "👍 좋아요 — 상승",
   [POSES.PINCH]: "🤏 핀치 — 영역확정/삭제",
   [POSES.OK]: "👌 OK — 궤도",
-  [POSES.ROCK]: "🤘 락 — 전기",
-  [POSES.STOP]: "✋ 스톱 — 전기방패",
   [POSES.SHAKA]: "🤙 샤카 — 파도",
-  [POSES.JAZZ]: "🙌 재즈 — 무지개",
   [POSES.NEUTRAL]: "",
 };

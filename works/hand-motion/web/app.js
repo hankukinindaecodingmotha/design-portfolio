@@ -1440,8 +1440,8 @@ function detectCrossLink(players) {
   if (!pair) return null;
   const { a, b, dist } = pair;
   if (dist < 0.12) return "highfive";
-  const openA = a.pose === POSES.OPEN_PALM || a.pose === POSES.STOP;
-  const openB = b.pose === POSES.OPEN_PALM || b.pose === POSES.STOP;
+  const openA = a.pose === POSES.OPEN_PALM;
+  const openB = b.pose === POSES.OPEN_PALM;
   if (openA && openB && dist < 0.45) return "duo_field";
   if (dist < 0.5) return "versus";
   return null;
@@ -1464,12 +1464,7 @@ function detectDuoCombo(left, right) {
     (lp === POSES.FIST && rp === POSES.OPEN_PALM) ||
     (rp === POSES.FIST && lp === POSES.OPEN_PALM)
   ) return "push";
-  if (lp === POSES.ROCK && rp === POSES.ROCK) return "storm";
   if (lp === POSES.OPEN_PALM && rp === POSES.OPEN_PALM) return "field";
-  if (lp === POSES.JAZZ && rp === POSES.JAZZ) return "rainbow_bridge";
-  if (
-    (lp === POSES.THUMBS_UP && rp === POSES.THUMBS_UP)
-  ) return "cheer";
   return "bridge";
 }
 
@@ -1478,10 +1473,7 @@ const DUO_LABELS = {
   point_link: "☝️☝️ 양손 가리키기 — 연결 빔",
   cross_laser: "✌️✌️ 더블 브이 — 교차 레이저",
   push: "✊🖐 주먹+손바닥 — 밀어내기",
-  storm: "🤘🤘 더블 락 — 폭풍",
   field: "🖐🖐 양손 펼침 — 힘의 장",
-  rainbow_bridge: "🙌🙌 더블 재즈 — 무지개 다리",
-  cheer: "👍👍 더블 좋아요 — 환호",
   bridge: "🤲 양손 연결 — 에너지 브릿지",
 };
 
@@ -1490,14 +1482,9 @@ const LEGEND_SOLO = [
   { key: POSES.FIST, hand: "✊", ico: IS_QUINT ? "🪨" : "🌑", label: IS_QUINT ? "대지 · 주먹↓ 파기" : "주먹 · 수축" },
   { key: POSES.PEACE, hand: "✌️", ico: IS_QUINT ? "🔥" : "💥", label: IS_QUINT ? "불 · 태양풍 레이저" : "브이 · 레이저" },
   { key: POSES.POINT, hand: "☝️", ico: IS_QUINT ? "✨" : "🎯", label: IS_QUINT ? "별빛 · 빔/별자리" : "가리키기 · 빔/영역" },
-  { key: POSES.THUMBS_UP, hand: "👍", ico: IS_QUINT ? "🚀" : "⬆️", label: IS_QUINT ? "상승 · 궤도 탈출" : "좋아요 · 상승" },
   { key: POSES.PINCH, hand: "🤏", ico: IS_QUINT ? "🌑" : "✅", label: IS_QUINT ? "특이점 · 확정/삭제" : "핀치 · 영역확정/삭제" },
-  { key: "tip_filter", hand: "🖖", ico: IS_QUINT ? "🌌" : "🪄", label: IS_QUINT ? "4손가락 벌리기 · 에테르 베일" : "손끝 붙였다가 벌리기 · 사이 필터" },
   { key: POSES.OK, hand: "👌", ico: IS_QUINT ? "🌌" : "🌀", label: IS_QUINT ? "에테르 · 제5원소 궤도" : "OK · 궤도" },
-  { key: POSES.ROCK, hand: "🤘", ico: IS_QUINT ? "🔥" : "⚡", label: IS_QUINT ? "화염 · 태양 벼락" : "락 · 전기" },
-  { key: POSES.STOP, hand: "✋", ico: IS_QUINT ? "🛡" : "🛡", label: IS_QUINT ? "공허 · 우주 방패" : "스톱 · 전기방패" },
   { key: POSES.SHAKA, hand: "🤙", ico: IS_QUINT ? "🌊" : "🌊", label: IS_QUINT ? "물 · 성운 해류" : "샤카 · 파도" },
-  { key: POSES.JAZZ, hand: "🙌", ico: IS_QUINT ? "🌈" : "🌈", label: IS_QUINT ? "오로라 · 스펙트럼" : "재즈 · 무지개" },
 ];
 
 const LEGEND_DUO = [
@@ -1505,10 +1492,7 @@ const LEGEND_DUO = [
   { key: "point_link", hand: "☝️☝️", ico: "✨", label: IS_QUINT ? "양손 포인트 · 별다리" : "양손 포인트 · 연결" },
   { key: "cross_laser", hand: "✌️✌️", ico: "🔥", label: IS_QUINT ? "더블 브이 · 교차 플레어" : "더블 브이 · 교차 레이저" },
   { key: "push", hand: "✊🖐", ico: "🪨", label: IS_QUINT ? "주먹+손바닥 · 지각 밀기" : "주먹+손바닥 · 밀기" },
-  { key: "storm", hand: "🤘🤘", ico: "⚡", label: IS_QUINT ? "더블 락 · 태양폭풍" : "더블 락 · 폭풍" },
   { key: "field", hand: "🖐🖐", ico: "🌬", label: IS_QUINT ? "양손 펼침 · 대기장" : "양손 펼침 · 힘의 장" },
-  { key: "rainbow_bridge", hand: "🙌🙌", ico: "🌈", label: IS_QUINT ? "더블 재즈 · 오로라교" : "더블 재즈 · 무지개 다리" },
-  { key: "cheer", hand: "👍👍", ico: "🚀", label: IS_QUINT ? "더블 좋아요 · 발진" : "더블 좋아요 · 환호" },
   { key: "bridge", hand: "🤲", ico: "🌌", label: IS_QUINT ? "양손 연결 · 에테르 브릿지" : "양손 연결 · 브릿지" },
   { key: "heart", hand: "🫶", ico: "❤️", label: IS_QUINT ? "하트 · 제5원소 각성" : "하트 · 사랑의 빛" },
   { key: "together", hand: "🙏", ico: IS_QUINT ? "🌑" : "✨", label: IS_QUINT ? "합장 · 블랙홀" : "합장 · 소용돌이" },
