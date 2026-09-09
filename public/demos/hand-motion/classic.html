@@ -1,92 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CLASSIC — Hand Motion Effects</title>
-  <link rel="stylesheet" href="style.css" />
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
-      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
-    }
-  }
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ABYSSAL CURRENT — Motion Study</title>
+  <link rel="stylesheet" href="motion.css">
 </head>
-<body data-page="classic" data-experience="classic">
-  <div id="app">
-    <section id="start-screen">
-      <div class="card">
-        <p class="eyebrow">CLASSIC · 이전 이펙트</p>
-        <h1>전기와 필터로 손을 그려보세요</h1>
-        <p class="desc">검지 루프 필터, 손끝 사이 필터, 전기 아크 등 기존의 인터랙티브 이펙트 모드입니다. (최대 2명 · 영상 미전송)</p>
-        <button id="start-btn" type="button">카메라로 시작</button>
-        <button id="demo-btn" type="button" class="demo-btn">데모 미리보기</button>
-        <p id="error-msg" class="error" hidden></p>
-      </div>
-    </section>
-
-    <section id="stage" hidden>
-      <video id="camera" playsinline webkit-playsinline muted autoplay></video>
-      <canvas id="visual-canvas"></canvas>
-      <canvas id="fx-canvas"></canvas>
-      <div id="hud">
-        <span id="status">손을 보여주세요</span>
-        <span id="hint">☝️ 루프→필터 · 🖖 손끝 붙였다가 벌리기→사이 필터 · ⚡ 전기</span>
-        <span id="mode-label">모드: AR</span>
-        <p id="stage-error" class="stage-error" hidden></p>
-      </div>
-
-      <aside id="legend" aria-label="제스처 가이드">
-        <div class="legend-head">
-          <strong>제스처 가이드</strong>
-          <button id="legend-toggle" type="button" title="접기/펼치기">접기</button>
-        </div>
-        <div class="legend-body">
-          <p class="legend-section">한 손</p>
-          <ul id="legend-solo" class="legend-grid"></ul>
-          <p class="legend-section">양손</p>
-          <ul id="legend-duo" class="legend-grid"></ul>
-        </div>
-      </aside>
-
-      <nav id="mode-bar" aria-label="보기 모드">
-        <button type="button" data-mode="ar" class="mode-btn active" title="카메라 + 이펙트">AR</button>
-        <button type="button" data-mode="track" class="mode-btn" title="손가락/관절 파악">파악</button>
-        <button type="button" data-mode="art" class="mode-btn" title="추상 아트 비주얼">아트</button>
-        <button type="button" data-mode="fx" class="mode-btn" title="이펙트만">이펙트</button>
-        <button type="button" data-mode="test" class="mode-btn" title="이펙트 테스트">테스트</button>
-      </nav>
-      <div id="test-panel" hidden>
-        <button type="button" data-test="loop">루프필터</button>
-        <button type="button" data-test="tip">손끝필터</button>
-        <button type="button" data-test="electric">전기</button>
-        <button type="button" data-test="cycle">스타일순환</button>
-        <button type="button" data-test="clear">초기화</button>
-      </div>
-      <button id="ar-btn" type="button" title="이전 AR/ART 토글 (레거시)" hidden>AR</button>
-      <button id="stop-btn" type="button" title="종료">✕</button>
-    </section>
-
-  </div>
-
-  <script>
-    window.addEventListener("unhandledrejection", (e) => {
-      const el = document.getElementById("error-msg");
-      if (el) { el.hidden = false; el.textContent = "오류: " + (e.reason?.message || e.reason || "알 수 없는 오류"); }
-    });
-    document.addEventListener("DOMContentLoaded", () => {
-      setTimeout(() => {
-        if (!window.__HAND_APP_READY__) {
-          const err = document.getElementById("error-msg");
-          if (err) { err.hidden = false; err.textContent = "앱 스크립트가 아직 준비되지 않았습니다. 새로고침 해주세요."; }
-        }
-      }, 5000);
-    });
-  </script>
-
+<body data-page="classic" data-scene="ocean">
+  <main id="motion-stage">
+    <canvas id="motion-canvas"></canvas>
+    <video id="motion-video" playsinline muted autoplay></video>
+    <div class="motion-grain"></div><div class="motion-vignette"></div>
+    <header class="motion-header"><i></i><strong>ABYSSAL CURRENT</strong><small>FLUID MOTION STUDY / 01</small></header>
+    <div class="motion-readout"><span>MEDIUM<b>PELAGIC WATER</b></span><span>RESPONSE<b id="input-signal">POINTER FLOW</b></span></div>
+    <div class="motion-hint">MOVE · 유체 흐름　CLICK · 압력 펄스</div>
+    <span class="scene-number">01 / 04</span>
+    <button class="hand-input" id="hand-input">HAND INPUT</button>
+    <p class="motion-error" id="motion-error"></p>
+  </main>
   <script type="module" src="pages-nav.js"></script>
-  <script type="module" src="app.js?v=20260907gpt"></script>
+  <script type="module" src="motion-studio.js"></script>
 </body>
 </html>

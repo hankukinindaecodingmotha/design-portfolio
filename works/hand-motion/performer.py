@@ -20,7 +20,14 @@ from mediapipe.tasks.python.vision import drawing_utils, drawing_styles
 
 from audio_engine import AudioEngine
 from download_model import download_model
-from hand_utils import HandFeatures, SwipeDetector, extract_features, hands_spread, hands_together
+from hand_utils import (
+    GestureStabilizer,
+    HandFeatures,
+    SwipeDetector,
+    extract_features,
+    hands_spread,
+    hands_together,
+)
 from visual_engine import VisualEngine
 
 
@@ -33,9 +40,9 @@ def create_hand_landmarker(model_path: Path) -> vision.HandLandmarker:
             ),
             running_mode=vision.RunningMode.VIDEO,
             num_hands=2,
-            min_hand_detection_confidence=0.4,
-            min_hand_presence_confidence=0.4,
-            min_tracking_confidence=0.4,
+            min_hand_detection_confidence=0.5,
+            min_hand_presence_confidence=0.5,
+            min_tracking_confidence=0.5,
         )
 
     try:
@@ -79,11 +86,12 @@ def run(
     out_w, out_h = 1280, 720
     visuals = VisualEngine(out_w, out_h)
     audio = AudioEngine() if not no_audio else None
-    swipe = SwipeDetector()
-    was_pinching = [False, False]
+    swipes: dict[str, SwipeDetector] = {}
+    stabilizers: dict[str, GestureStabilizer] = {}
+    was_pinching: dict[str, bool] = {}
     was_hands_together = False
     was_hands_spread = False
-    was_pose: list[str] = ["neutral", "neutral"]
+    was_pose: dict[str, str] = {}
     prev_hand_dist = 1.0
 
     window = "Hand Performer — TouchDesigner Style"
@@ -93,9 +101,8 @@ def run(
     print("=" * 50)
     print("  Hand Performer — 손으로 오디오·비주얼 제어")
     print("=" * 50)
-    print("  🖐 손바닥 → 충격파 | ✊ 주먹 → 수축 | ✌️ → 레이저")
-    print("  👍 엄지 → 상승 | 🤏 핀치 → 폭발 | 👌 OK → 궤도")
-    print("  🤘 락 → 번개 | ✋ 스톱 → 방패 | 🤙 샤카 → 파도 | 🙌 재즈 → 무지개")
+    print("  한손: 1P 핀치 | 1O 펼침 | 1F 주먹")
+    print("  두손: 2P 핀치 | 2O 펼침 | 2F 주먹")
     print("  양손 모음 → 소용돌이 | 양손 벌림 → 번개 | 빠르게 모음 → 박수")
     print("  손 펼치기   → 밝기·볼륨·톤")
     print("  핀치        → 비트 + 파티클")
@@ -135,9 +142,16 @@ def run(
             together = False
             spread = False
             if result.hand_landmarks:
-                for lm in result.hand_landmarks:
+                hand_keys: list[str] = []
+                for idx, lm in enumerate(result.hand_landmarks):
                     draw_skeleton(cam, lm)
-                    hands.append(extract_features(lm, cam_w, cam_h))
+                    if result.handedness and idx < len(result.handedness) and result.handedness[idx]:
+                        key = result.handedness[idx][0].category_name or f"hand-{idx}"
+                    else:
+                        key = f"hand-{idx}"
+                    hand_keys.append(key)
+                    stabilizer = stabilizers.setdefault(key, GestureStabilizer())
+                    hands.append(extract_features(lm, cam_w, cam_h, stabilizer))
 
                 hand = hands[0]
                 if len(hands) >= 2:
@@ -162,13 +176,17 @@ def run(
                     prev_hand_dist = dist
 
                 for idx, h in enumerate(hands):
-                    if h.pose != was_pose[idx]:
+                    key = hand_keys[idx]
+                    if h.pose != was_pose.get(key, "neutral"):
                         if h.pose == "open_palm":
                             visuals.on_pinch(h.palm_x * out_w, h.palm_y * out_h, visuals.state.hue)
-                        was_pose[idx] = h.pose
+                        was_pose[key] = h.pose
 
                 for idx, h in enumerate(hands):
-                    direction = swipe.update(h.palm_x, h.palm_y, now)
+                    key = hand_keys[idx]
+                    direction = swipes.setdefault(key, SwipeDetector()).update(
+                        h.palm_x, h.palm_y, now
+                    )
                     if direction in ("left", "right"):
                         scene = visuals.next_scene()
                         action_msg = f"Scene → {scene}"
@@ -177,11 +195,11 @@ def run(
                             audio.next_preset()
                         break
 
-                    if h.is_pinching and not was_pinching[idx]:
+                    if h.is_pinching and not was_pinching.get(key, False):
                         px = h.palm_x * out_w
                         py = h.palm_y * out_h
                         visuals.on_pinch(px, py, visuals.state.hue)
-                    was_pinching[idx] = h.is_pinching
+                    was_pinching[key] = h.is_pinching
 
                     if audio:
                         audio.update(
@@ -195,10 +213,13 @@ def run(
             else:
                 hand = None
                 hands = []
-                was_pinching = [False, False]
+                was_pinching = {}
                 was_hands_together = False
                 was_hands_spread = False
-                was_pose = ["neutral", "neutral"]
+                was_pose = {}
+                for stabilizer in stabilizers.values():
+                    stabilizer.reset()
+                swipes.clear()
                 prev_hand_dist = 1.0
 
             visuals.update(hands if hands else None, dt)

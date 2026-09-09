@@ -1,11 +1,12 @@
 /**
  * 경험 페이지 전환 네비 (모든 페이지 우측 상단 공통)
- * classic · quintessence · click
+ * ocean · cosmos · physics · click
  */
 const PAGES = [
-  { id: "classic", href: "./classic.html", label: "클래식", title: "이전 전기·필터 이펙트" },
-  { id: "quintessence", href: "./quintessence.html", label: "제5원소", title: "우주·원소 인터랙션" },
-  { id: "click", href: "./click.html", label: "클릭", title: "손으로 마우스처럼 클릭" },
+  { id: "classic", href: "./classic.html", label: "바다", title: "심해 유체장 제스처" },
+  { id: "quintessence", href: "./quintessence.html", label: "우주", title: "중력·성운·에테르" },
+  { id: "physics", href: "./physics.html", label: "물리", title: "중력·충돌·관성 시뮬레이션" },
+  { id: "click", href: "./click.html", label: "클릭", title: "마우스 클릭 반응 실험" },
 ];
 
 function detectPageId() {
@@ -14,6 +15,7 @@ function detectPageId() {
   const path = (location.pathname || "").split("/").pop() || "";
   if (path.includes("classic")) return "classic";
   if (path.includes("click")) return "click";
+  if (path.includes("physics")) return "physics";
   if (path.includes("quintessence")) return "quintessence";
   return "hub";
 }
