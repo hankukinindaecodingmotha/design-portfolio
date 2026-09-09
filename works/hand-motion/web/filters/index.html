@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>CAMERA TOUCH — AR Filters</title>
+  <link rel="stylesheet" href="filters.css">
+</head>
+<body data-page="filters">
+  <main class="filter-stage">
+    <video id="filter-video" playsinline muted autoplay></video>
+    <canvas id="filter-canvas"></canvas>
+    <div class="filter-vignette"></div>
+    <header><i></i><strong>CAMERA TOUCH</strong><small>GESTURE FILTER LAB / 05</small></header>
+    <section class="filter-status"><span id="filter-index">FILTER 00</span><h1 id="filter-name">CAMERA READY</h1><p id="gesture-status">1P → 1O 켜기 · 2F → 2O 다음 필터</p></section>
+    <aside class="filter-guide"><b>CONTROL MAP</b><p><strong>1P → 1O</strong><span>필터 켜기·끄기</span></p><p><strong>2F → 2O</strong><span>다음 필터</span></p><p><strong>CLICK</strong><span>켜기·다음</span></p><p><strong>WHEEL</strong><span>필터 순환</span></p></aside>
+    <button id="camera-start" type="button" hidden>RETRY CAMERA</button>
+    <p class="filter-error" id="filter-error"></p>
+  </main>
+  <script type="module" src="../pages-nav.js"></script>
+  <script type="module" src="filters.js"></script>
+</body>
+</html>
