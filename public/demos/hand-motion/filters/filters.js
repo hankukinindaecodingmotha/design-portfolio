@@ -5,7 +5,7 @@ const canvas = document.getElementById("filter-canvas");
 const ctx = canvas.getContext("2d");
 const source = document.createElement("canvas");
 const sourceCtx = source.getContext("2d");
-const startBtn = document.getElementById("camera-start");
+const startBtn = document.getElementById("camera-toggle");
 const nameEl = document.getElementById("filter-name");
 const indexEl = document.getElementById("filter-index");
 const gestureEl = document.getElementById("gesture-status");
@@ -409,45 +409,76 @@ function loop(now) {
   renderFilter(now);
 }
 
+function setCameraUi(on, busy = false) {
+  startBtn.disabled = busy;
+  startBtn.setAttribute("aria-pressed", on ? "true" : "false");
+  if (busy) startBtn.textContent = on ? "끄는 중…" : "켜는 중…";
+  else startBtn.textContent = on ? "카메라 끄기" : "카메라 켜기";
+}
+
+function stopCamera() {
+  if (cameraStarting) return;
+  tracker?.stop();
+  tracker = null;
+  video.srcObject = null;
+  latestHands = [];
+  lastGate = null;
+  wasGatePinching = false;
+  errorEl.textContent = "";
+  gestureEl.textContent = "카메라가 꺼져 있습니다. 다시 켜려면 버튼을 누르세요.";
+  nameEl.textContent = "CAMERA OFF";
+  indexEl.textContent = "FILTER 00";
+  setCameraUi(false);
+}
+
 async function start() {
   if (cameraStarting || tracker) return;
   cameraStarting = true;
-  startBtn.hidden = true;
-  startBtn.disabled = true;
+  setCameraUi(false, true);
   errorEl.textContent = "";
   try {
     tracker = new GestureTracker(video);
     await tracker.start();
     cameraStarting = false;
+    gestureEl.textContent = GUIDE_IDLE;
+    setFilter(filterIndex, active);
+    setCameraUi(true);
   } catch (error) {
     cameraStarting = false;
     tracker?.stop();
     tracker = null;
+    video.srcObject = null;
     errorEl.textContent = `카메라를 시작할 수 없습니다. ${error.message || error}`;
-    startBtn.disabled = false;
+    setCameraUi(false);
     if (error.name !== "NotAllowedError" && retries < 1) {
       retries += 1;
       setTimeout(start, 1800);
-    } else {
-      startBtn.hidden = false;
-      startBtn.textContent = "RETRY CAMERA";
     }
   }
+}
+
+function toggleCamera() {
+  if (cameraStarting) return;
+  if (tracker) stopCamera();
+  else start();
 }
 
 canvas.addEventListener("pointermove", (event) => {
   pointer = { x: event.clientX / W, y: event.clientY / H };
 });
 canvas.addEventListener("click", () => {
+  if (!tracker) return;
   if (!active) setFilter(filterIndex, true);
   else nextFilter();
 });
 addEventListener("wheel", (event) => {
+  if (!tracker) return;
   setFilter(filterIndex + (event.deltaY > 0 ? 1 : -1), true);
 }, { passive: true });
 addEventListener("resize", resize);
-startBtn.addEventListener("click", start);
+startBtn.addEventListener("click", toggleCamera);
 resize();
 gestureEl.textContent = GUIDE_IDLE;
+setCameraUi(false);
 requestAnimationFrame(loop);
 start();
