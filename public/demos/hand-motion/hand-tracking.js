@@ -51,6 +51,7 @@ export function measureRawHand(landmarks) {
   const meanRatio = TIP_IDS.reduce(
     (sum, id) => sum + distance(landmarks[id], center) / scale, 0,
   ) / TIP_IDS.length;
+  const mirror = (point) => ({ x: 1 - point.x, y: point.y });
   return {
     x: 1 - landmarks[9].x,
     y: landmarks[9].y,
@@ -58,6 +59,8 @@ export function measureRawHand(landmarks) {
     openness: clamp((meanRatio - 0.72) / 1.15, 0, 1),
     pinchRatio: distance(landmarks[4], landmarks[8]) / scale,
     fingerCount: fingerCount(landmarks, scale),
+    thumbTip: mirror(landmarks[4]),
+    indexTip: mirror(landmarks[8]),
   };
 }
 
@@ -79,6 +82,7 @@ class StableHand {
   constructor() {
     this.pinch = new MajorityLatch(); this.fist = new MajorityLatch(); this.open = new MajorityLatch();
     this.x = null; this.y = null;
+    this.thumbTip = null; this.indexTip = null;
   }
   update(raw, thresholds, dt) {
     const pinchShape = raw.openness > (this.pinch.state ? 0.16 : 0.22) || raw.fingerCount >= 1;
@@ -88,9 +92,31 @@ class StableHand {
     const alpha = 1 - Math.exp(-dt * 14);
     const oldX = this.x ?? raw.x; const oldY = this.y ?? raw.y;
     this.x = oldX + (raw.x - oldX) * alpha; this.y = oldY + (raw.y - oldY) * alpha;
-    return { ...raw, x: this.x, y: this.y, vx: (this.x - oldX) / Math.max(dt, 0.001), vy: (this.y - oldY) / Math.max(dt, 0.001), pose: pinching ? "pinch" : fist ? "fist" : open ? "open" : "neutral" };
+    const smoothTip = (prev, next) => {
+      if (!next) return prev;
+      if (!prev) return { ...next };
+      return {
+        x: prev.x + (next.x - prev.x) * alpha,
+        y: prev.y + (next.y - prev.y) * alpha,
+      };
+    };
+    this.thumbTip = smoothTip(this.thumbTip, raw.thumbTip);
+    this.indexTip = smoothTip(this.indexTip, raw.indexTip);
+    return {
+      ...raw,
+      x: this.x,
+      y: this.y,
+      vx: (this.x - oldX) / Math.max(dt, 0.001),
+      vy: (this.y - oldY) / Math.max(dt, 0.001),
+      thumbTip: this.thumbTip,
+      indexTip: this.indexTip,
+      pose: pinching ? "pinch" : fist ? "fist" : open ? "open" : "neutral",
+    };
   }
-  reset() { this.pinch.reset(); this.fist.reset(); this.open.reset(); }
+  reset() {
+    this.pinch.reset(); this.fist.reset(); this.open.reset();
+    this.thumbTip = null; this.indexTip = null;
+  }
 }
 
 export function aggregateGesture(hands) {
