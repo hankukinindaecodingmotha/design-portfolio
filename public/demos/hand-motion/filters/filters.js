@@ -18,15 +18,17 @@ const filters = [
   { name: "SWIRL FOLD", type: "swirl" },
 ];
 
-/** 양손 게이트(엄지·검지 4점) 안에서 순환하는 효과 */
+/** 양손 게이트 전용 효과 (메인 필터와 다른 룩) */
 const GATE_FX = [
   { name: "GATE GLITCH", type: "glitch" },
-  { name: "GATE LENS", type: "lens" },
-  { name: "GATE BLOOM", type: "bloom" },
-  { name: "GATE SWIRL", type: "swirl" },
+  { name: "MIRROR KALEIDO", type: "kaleido" },
+  { name: "PIXEL MELT", type: "pixel" },
+  { name: "CHROMA PORTAL", type: "chroma" },
+  { name: "SCAN WAVE", type: "scan" },
+  { name: "INK NEGATIVE", type: "ink" },
 ];
 
-const GUIDE_IDLE = "눈 깜빡임 = 다음 필터 · 글리치에서 엄지·검지 터치 = 게이트 효과 변경";
+const GUIDE_IDLE = "눈 깜빡임 = 다음 필터 · 글리치에서 엄지·검지 터치 = 새 게이트 효과";
 
 let W = 1;
 let H = 1;
@@ -205,67 +207,148 @@ function renderGlitchInGate(now, gate) {
   ctx.restore();
 }
 
-function renderLensInGate(now, gate) {
+/** 4면 미러 카레이도 */
+function renderKaleidoInGate(now, gate) {
   const { cx, cy } = gate;
+  const pulse = 1 + Math.sin(now * 0.003) * 0.04;
   ctx.save();
   pathGate(gate);
   ctx.clip();
-  ctx.filter = "saturate(1.4) contrast(1.1)";
-  ctx.translate(cx, cy);
-  ctx.scale(1.38, 1.38);
-  ctx.drawImage(source, -cx, -cy, W, H);
-  ctx.restore();
+  ctx.drawImage(source, 0, 0, W, H);
 
-  ctx.save();
-  pathGate(gate);
-  ctx.strokeStyle = `rgba(190,255,247,${0.55 + Math.sin(now * 0.005) * 0.2})`;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
-}
-
-function renderBloomInGate(now, gate) {
-  ctx.save();
-  pathGate(gate);
-  ctx.clip();
-  ctx.globalAlpha = 0.4;
-  ctx.filter = "blur(16px) brightness(1.6) saturate(1.75)";
-  ctx.drawImage(source, -8, -8, W + 16, H + 16);
-  ctx.filter = "none";
-  ctx.globalAlpha = 1;
-  const g = ctx.createRadialGradient(gate.cx, gate.cy, 0, gate.cx, gate.cy, Math.sqrt(gate.area) * 0.9);
-  g.addColorStop(0, "rgba(255,244,254,.42)");
-  g.addColorStop(0.5, "rgba(255,110,210,.16)");
-  g.addColorStop(1, "transparent");
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, W, H);
-  ctx.restore();
-}
-
-function renderSwirlInGate(now, gate) {
-  const { cx, cy, area } = gate;
-  const max = Math.max(40, Math.sqrt(area) * 0.85);
-  for (let r = max; r > 16; r -= 18) {
+  for (let i = 0; i < 4; i++) {
     ctx.save();
-    pathGate(gate);
-    ctx.clip();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.clip();
     ctx.translate(cx, cy);
-    ctx.rotate(Math.sin(now * 0.0018 + r * 0.03) * 0.08 * (1 - r / max));
-    ctx.translate(-cx, -cy);
-    ctx.drawImage(source, 0, 0, W, H);
+    ctx.rotate((Math.PI / 2) * i + now * 0.00025);
+    ctx.scale(i % 2 ? -pulse : pulse, pulse);
+    ctx.globalAlpha = 0.42;
+    ctx.drawImage(source, -cx, -cy, W, H);
     ctx.restore();
   }
+  ctx.restore();
+}
+
+/** 큰 픽셀이 녹아내리듯 어긋남 */
+function renderPixelInGate(now, gate) {
+  const minX = Math.min(...gate.points.map((p) => p.x));
+  const maxX = Math.max(...gate.points.map((p) => p.x));
+  const minY = Math.min(...gate.points.map((p) => p.y));
+  const maxY = Math.max(...gate.points.map((p) => p.y));
+  const block = Math.max(10, Math.floor(Math.sqrt(gate.area) / 14));
+
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+  ctx.imageSmoothingEnabled = false;
+
+  for (let y = minY; y < maxY; y += block) {
+    const drift = Math.sin(now * 0.004 + y * 0.05) * block * 1.6;
+    for (let x = minX; x < maxX; x += block) {
+      const sx = Math.max(0, Math.min(W - 1, x + drift));
+      const sy = Math.max(0, Math.min(H - 1, y + Math.cos(now * 0.003 + x * 0.04) * 4));
+      ctx.drawImage(source, sx, sy, block, block, x, y, block + 1, block + 1);
+    }
+  }
+
+  ctx.imageSmoothingEnabled = true;
+  ctx.globalCompositeOperation = "overlay";
+  ctx.globalAlpha = 0.25;
+  ctx.fillStyle = "rgba(120,255,210,.35)";
+  ctx.fillRect(minX, minY, maxX - minX, maxY - minY);
+  ctx.restore();
+}
+
+/** 중심에서 RGB가 갈라지는 포털 */
+function renderChromaInGate(now, gate) {
+  const { cx, cy } = gate;
+  const spread = 8 + Math.sin(now * 0.005) * 6;
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.85;
+
+  ctx.save();
+  ctx.translate(spread, 0);
+  ctx.globalAlpha = 0.55;
+  ctx.drawImage(source, 0, 0, W, H);
+  ctx.fillStyle = "rgba(255,40,80,.22)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(-spread, 0);
+  ctx.globalAlpha = 0.55;
+  ctx.drawImage(source, 0, 0, W, H);
+  ctx.fillStyle = "rgba(40,220,255,.22)";
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+
+  ctx.globalCompositeOperation = "source-over";
+  ctx.globalAlpha = 0.55;
+  ctx.translate(cx, cy);
+  ctx.scale(1.08 + Math.sin(now * 0.004) * 0.04, 1.08);
+  ctx.drawImage(source, -cx, -cy, W, H);
+  ctx.restore();
+}
+
+/** CRT 스캔라인 + 물결 왜곡 */
+function renderScanInGate(now, gate) {
+  const minY = Math.min(...gate.points.map((p) => p.y));
+  const maxY = Math.max(...gate.points.map((p) => p.y));
+  const span = Math.max(20, maxY - minY);
+
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+
+  for (let i = 0; i < Math.ceil(span / 3); i++) {
+    const y = minY + i * 3;
+    const wave = Math.sin(now * 0.008 + i * 0.35) * 14;
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(0, y, W, 3);
+    ctx.clip();
+    ctx.drawImage(source, wave, Math.sin(now * 0.002 + i) * 2, W, H);
+    if (i % 2 === 0) {
+      ctx.fillStyle = "rgba(0,0,0,.22)";
+      ctx.fillRect(0, y, W, 1);
+    }
+    ctx.restore();
+  }
+
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = `rgba(80,255,180,${0.15 + Math.sin(now * 0.01) * 0.08})`;
+  ctx.fillRect(0, minY + ((now * 0.12) % span), W, 10);
+  ctx.restore();
+}
+
+/** 잉크 네거티브 / 포스터 대비 */
+function renderInkInGate(now, gate) {
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+  ctx.filter = "invert(1) contrast(1.35) saturate(0.2) brightness(1.05)";
+  ctx.drawImage(source, 0, 0, W, H);
+  ctx.filter = "none";
+  ctx.globalCompositeOperation = "multiply";
+  ctx.globalAlpha = 0.55;
+  ctx.fillStyle = `rgba(255, ${90 + Math.sin(now * 0.004) * 40}, 160, .85)`;
+  ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = "screen";
+  ctx.globalAlpha = 0.2;
+  ctx.drawImage(source, Math.sin(now * 0.006) * 4, 0, W, H);
+  ctx.restore();
 }
 
 function renderGateEffect(now, gate) {
   const fx = GATE_FX[gateFxIndex].type;
   if (fx === "glitch") renderGlitchInGate(now, gate);
-  else if (fx === "lens") renderLensInGate(now, gate);
-  else if (fx === "bloom") renderBloomInGate(now, gate);
-  else if (fx === "swirl") renderSwirlInGate(now, gate);
+  else if (fx === "kaleido") renderKaleidoInGate(now, gate);
+  else if (fx === "pixel") renderPixelInGate(now, gate);
+  else if (fx === "chroma") renderChromaInGate(now, gate);
+  else if (fx === "scan") renderScanInGate(now, gate);
+  else if (fx === "ink") renderInkInGate(now, gate);
   drawGateOutline(gate, now);
 }
 
