@@ -18,7 +18,15 @@ const filters = [
   { name: "SWIRL FOLD", type: "swirl" },
 ];
 
-const GUIDE_IDLE = "눈 깜빡임 = 다음 필터 · 양손 쥐었다 펴기 = 다음 필터 · 엄지·검지 공간 = 글리치";
+/** 양손 게이트(엄지·검지 4점) 안에서 순환하는 효과 */
+const GATE_FX = [
+  { name: "GATE GLITCH", type: "glitch" },
+  { name: "GATE LENS", type: "lens" },
+  { name: "GATE BLOOM", type: "bloom" },
+  { name: "GATE SWIRL", type: "swirl" },
+];
+
+const GUIDE_IDLE = "눈 깜빡임 = 다음 필터 · 글리치에서 엄지·검지 터치 = 게이트 효과 변경";
 
 let W = 1;
 let H = 1;
@@ -26,6 +34,7 @@ let tracker;
 let last = performance.now();
 let active = false;
 let filterIndex = 0;
+let gateFxIndex = 0;
 let cameraStarting = false;
 let retries = 0;
 let pointer = { x: 0.5, y: 0.5 };
@@ -33,7 +42,10 @@ let previousGesture = "neutral";
 let pinchArmedUntil = 0;
 let fistArmedUntil = 0;
 let fistChangeCooldownUntil = 0;
+let wasGatePinching = false;
+let gatePinchCooldownUntil = 0;
 let latestHands = [];
+let lastGate = null;
 
 function handsClosed(hands) {
   return hands.length >= 2 && hands.every((hand) => (
@@ -45,6 +57,21 @@ function handsOpened(hands) {
   return hands.length >= 2 && hands.every((hand) => (
     hand.pose === "open" || (hand.openness > 0.5 && hand.fingerCount >= 3)
   ));
+}
+
+function isGatePinching(hands) {
+  if (!hands?.length) return false;
+  return hands.some((hand) => (
+    hand.pose === "pinch" || (typeof hand.pinchRatio === "number" && hand.pinchRatio < 0.48)
+  ));
+}
+
+function nextGateFx() {
+  gateFxIndex = (gateFxIndex + 1) % GATE_FX.length;
+  if (filters[filterIndex].type === "glitch") {
+    nameEl.textContent = GATE_FX[gateFxIndex].name;
+    indexEl.textContent = `GATE 0${gateFxIndex + 1}`;
+  }
 }
 
 function resize() {
@@ -80,8 +107,14 @@ function drawSource() {
 function setFilter(next, enabled = true) {
   filterIndex = (next + filters.length) % filters.length;
   active = enabled;
-  indexEl.textContent = active ? `FILTER 0${filterIndex + 1}` : "FILTER 00";
-  nameEl.textContent = active ? filters[filterIndex].name : "CAMERA READY";
+  const current = filters[filterIndex];
+  if (active && current.type === "glitch") {
+    indexEl.textContent = `GATE 0${gateFxIndex + 1}`;
+    nameEl.textContent = GATE_FX[gateFxIndex].name;
+  } else {
+    indexEl.textContent = active ? `FILTER 0${filterIndex + 1}` : "FILTER 00";
+    nameEl.textContent = active ? current.name : "CAMERA READY";
+  }
 }
 
 function nextFilter() {
@@ -89,7 +122,7 @@ function nextFilter() {
 }
 
 /** 양손 엄지·검지 끝으로 만든 사각형 (정규화 → 픽셀) */
-function dualFingerGate(hands) {
+function dualFingerGate(hands, minAreaScale = 0.004) {
   if (!hands || hands.length < 2) return null;
   const ordered = [...hands].sort((a, b) => a.x - b.x);
   const [left, right] = ordered;
@@ -102,14 +135,13 @@ function dualFingerGate(hands) {
     { x: right.thumbTip.x * W, y: right.thumbTip.y * H },
   ];
 
-  // 너무 작거나  degenerate 한 공간은 무시
   let area = 0;
   for (let i = 0; i < points.length; i++) {
     const j = (i + 1) % points.length;
     area += points[i].x * points[j].y - points[j].x * points[i].y;
   }
   area = Math.abs(area) * 0.5;
-  if (area < Math.min(W, H) * Math.min(W, H) * 0.004) return null;
+  if (area < Math.min(W, H) * Math.min(W, H) * minAreaScale) return null;
 
   const cx = points.reduce((s, p) => s + p.x, 0) / points.length;
   const cy = points.reduce((s, p) => s + p.y, 0) / points.length;
@@ -147,7 +179,6 @@ function renderGlitchInGate(now, gate) {
   pathGate(gate);
   ctx.clip();
 
-  // 게이트 안만 글리치 슬라이스
   const minY = Math.min(...gate.points.map((p) => p.y));
   const maxY = Math.max(...gate.points.map((p) => p.y));
   const span = Math.max(24, maxY - minY);
@@ -167,14 +198,75 @@ function renderGlitchInGate(now, gate) {
     ctx.restore();
   }
 
-  // 약간의 RGB 분리
   ctx.globalCompositeOperation = "lighter";
   ctx.globalAlpha = 0.22;
   ctx.drawImage(source, 6, 0, W, H);
   ctx.globalAlpha = 0.16;
   ctx.drawImage(source, -5, 1, W, H);
   ctx.restore();
+}
 
+function renderLensInGate(now, gate) {
+  const { cx, cy } = gate;
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+  ctx.filter = "saturate(1.4) contrast(1.1)";
+  ctx.translate(cx, cy);
+  ctx.scale(1.38, 1.38);
+  ctx.drawImage(source, -cx, -cy, W, H);
+  ctx.restore();
+
+  ctx.save();
+  pathGate(gate);
+  ctx.strokeStyle = `rgba(190,255,247,${0.55 + Math.sin(now * 0.005) * 0.2})`;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.restore();
+}
+
+function renderBloomInGate(now, gate) {
+  ctx.save();
+  pathGate(gate);
+  ctx.clip();
+  ctx.globalAlpha = 0.4;
+  ctx.filter = "blur(16px) brightness(1.6) saturate(1.75)";
+  ctx.drawImage(source, -8, -8, W + 16, H + 16);
+  ctx.filter = "none";
+  ctx.globalAlpha = 1;
+  const g = ctx.createRadialGradient(gate.cx, gate.cy, 0, gate.cx, gate.cy, Math.sqrt(gate.area) * 0.9);
+  g.addColorStop(0, "rgba(255,244,254,.42)");
+  g.addColorStop(0.5, "rgba(255,110,210,.16)");
+  g.addColorStop(1, "transparent");
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  ctx.restore();
+}
+
+function renderSwirlInGate(now, gate) {
+  const { cx, cy, area } = gate;
+  const max = Math.max(40, Math.sqrt(area) * 0.85);
+  for (let r = max; r > 16; r -= 18) {
+    ctx.save();
+    pathGate(gate);
+    ctx.clip();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.clip();
+    ctx.translate(cx, cy);
+    ctx.rotate(Math.sin(now * 0.0018 + r * 0.03) * 0.08 * (1 - r / max));
+    ctx.translate(-cx, -cy);
+    ctx.drawImage(source, 0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+function renderGateEffect(now, gate) {
+  const fx = GATE_FX[gateFxIndex].type;
+  if (fx === "glitch") renderGlitchInGate(now, gate);
+  else if (fx === "lens") renderLensInGate(now, gate);
+  else if (fx === "bloom") renderBloomInGate(now, gate);
+  else if (fx === "swirl") renderSwirlInGate(now, gate);
   drawGateOutline(gate, now);
 }
 
@@ -183,14 +275,19 @@ function renderFilter(now) {
   ctx.clearRect(0, 0, W, H);
   ctx.drawImage(source, 0, 0, W, H);
 
-  const gate = dualFingerGate(latestHands);
+  const pinching = isGatePinching(latestHands);
+  // 핀치 중에는 면적 임계를 낮춰 게이트가 바로 사라지지 않게
+  const gate = dualFingerGate(latestHands, pinching ? 0.0012 : 0.004) || (pinching ? lastGate : null);
+  if (gate) lastGate = gate;
+  else if (!pinching) lastGate = null;
+
   const { type } = filters[filterIndex];
   const x = pointer.x * W;
   const y = pointer.y * H;
 
-  // 글리치: 양손 엄지·검지 게이트 공간에만 적용
+  // 글리치 모드 = 게이트 플레이그라운드 (핀치로 게이트 효과 순환)
   if (type === "glitch") {
-    if (gate) renderGlitchInGate(now, gate);
+    if (gate) renderGateEffect(now, gate);
     return;
   }
 
@@ -256,12 +353,22 @@ function handleGesture(code, hands, now, blink = false) {
     };
   }
 
+  const onGlitch = filters[filterIndex].type === "glitch";
+  const pinching = isGatePinching(hands);
+
+  // 글리치(게이트) 모드에서 엄지·검지 닿으면 게이트 안 효과 변경
+  if (onGlitch && pinching && !wasGatePinching && now >= gatePinchCooldownUntil) {
+    nextGateFx();
+    gatePinchCooldownUntil = now + 650;
+    gestureEl.textContent = `게이트 효과 → ${GATE_FX[gateFxIndex].name}`;
+  }
+  wasGatePinching = pinching;
+
   if (blink) {
     nextFilter();
     gestureEl.textContent = `깜빡임 → ${filters[filterIndex].name}`;
   }
 
-  // 양손 쥐기 → 펴기 (pose 코드뿐 아니라 openness로도 감지)
   if (code === "2F" || handsClosed(hands)) fistArmedUntil = now + 4200;
   if (code === "1P") pinchArmedUntil = now + 2600;
 
@@ -274,15 +381,15 @@ function handleGesture(code, hands, now, blink = false) {
     fistArmedUntil = 0;
     fistChangeCooldownUntil = now + 900;
     gestureEl.textContent = `양손 펼침 → ${filters[filterIndex].name}`;
-  } else if (!blink && code === "1O" && pinchArmedUntil > now) {
+  } else if (!blink && !onGlitch && code === "1O" && pinchArmedUntil > now) {
     setFilter(filterIndex, !active);
     pinchArmedUntil = 0;
   }
 
   if (code !== previousGesture) {
     if (code === "2F" || handsClosed(hands)) gestureEl.textContent = "양손 주먹 감지 · 펼치면 필터 변경";
-    else if (code === "neutral") gestureEl.textContent = GUIDE_IDLE;
-    else if (!dualOpen) gestureEl.textContent = `${code} 감지`;
+    else if (code === "neutral" && !pinching) gestureEl.textContent = GUIDE_IDLE;
+    else if (!dualOpen && !(onGlitch && pinching)) gestureEl.textContent = `${code} 감지`;
     previousGesture = code;
   }
 }
