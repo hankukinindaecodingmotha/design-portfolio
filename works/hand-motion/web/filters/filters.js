@@ -18,7 +18,7 @@ const filters = [
   { name: "SWIRL FOLD", type: "swirl" },
 ];
 
-const GUIDE_IDLE = "양손 엄지·검지 공간 = 글리치 · 양손 주먹→펼침 = 다음 필터";
+const GUIDE_IDLE = "눈 깜빡임 = 다음 필터 · 양손 쥐었다 펴기 = 다음 필터 · 엄지·검지 공간 = 글리치";
 
 let W = 1;
 let H = 1;
@@ -32,7 +32,20 @@ let pointer = { x: 0.5, y: 0.5 };
 let previousGesture = "neutral";
 let pinchArmedUntil = 0;
 let fistArmedUntil = 0;
+let fistChangeCooldownUntil = 0;
 let latestHands = [];
+
+function handsClosed(hands) {
+  return hands.length >= 2 && hands.every((hand) => (
+    hand.pose === "fist" || (hand.openness < 0.4 && hand.fingerCount <= 2)
+  ));
+}
+
+function handsOpened(hands) {
+  return hands.length >= 2 && hands.every((hand) => (
+    hand.pose === "open" || (hand.openness > 0.5 && hand.fingerCount >= 3)
+  ));
+}
 
 function resize() {
   W = innerWidth;
@@ -234,7 +247,7 @@ function renderFilter(now) {
   }
 }
 
-function handleGesture(code, hands, now) {
+function handleGesture(code, hands, now, blink = false) {
   latestHands = hands || [];
   if (hands.length) {
     pointer = {
@@ -243,25 +256,33 @@ function handleGesture(code, hands, now) {
     };
   }
 
-  // 양손 주먹 감지 시 무장 → 양손 펼치면 다음 필터
-  if (code === "2F") fistArmedUntil = now + 3200;
+  if (blink) {
+    nextFilter();
+    gestureEl.textContent = `깜빡임 → ${filters[filterIndex].name}`;
+  }
+
+  // 양손 쥐기 → 펴기 (pose 코드뿐 아니라 openness로도 감지)
+  if (code === "2F" || handsClosed(hands)) fistArmedUntil = now + 4200;
   if (code === "1P") pinchArmedUntil = now + 2600;
 
-  if (code === "2O" && fistArmedUntil > now) {
+  const dualOpen = !blink
+    && (code === "2O" || handsOpened(hands))
+    && fistArmedUntil > now
+    && now >= fistChangeCooldownUntil;
+  if (dualOpen) {
     nextFilter();
     fistArmedUntil = 0;
-    gestureEl.textContent = `다음 필터 → ${filters[filterIndex].name}`;
-  } else if (code === "1O" && pinchArmedUntil > now) {
+    fistChangeCooldownUntil = now + 900;
+    gestureEl.textContent = `양손 펼침 → ${filters[filterIndex].name}`;
+  } else if (!blink && code === "1O" && pinchArmedUntil > now) {
     setFilter(filterIndex, !active);
     pinchArmedUntil = 0;
   }
 
   if (code !== previousGesture) {
-    if (code === "2F") gestureEl.textContent = "양손 주먹 감지 · 펼치면 필터 변경";
+    if (code === "2F" || handsClosed(hands)) gestureEl.textContent = "양손 주먹 감지 · 펼치면 필터 변경";
     else if (code === "neutral") gestureEl.textContent = GUIDE_IDLE;
-    else if (!(code === "2O" && previousGesture === "2F")) {
-      gestureEl.textContent = `${code} 감지`;
-    }
+    else if (!dualOpen) gestureEl.textContent = `${code} 감지`;
     previousGesture = code;
   }
 }
@@ -273,7 +294,7 @@ function loop(now) {
   if (tracker) {
     try {
       const result = tracker.update(now, dt);
-      if (result) handleGesture(result.gesture, result.hands, now);
+      if (result) handleGesture(result.gesture, result.hands, now, result.blink);
     } catch (error) {
       errorEl.textContent = error.message || String(error);
     }

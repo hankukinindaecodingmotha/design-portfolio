@@ -9,15 +9,23 @@ export const DEFAULT_THRESHOLDS = Object.freeze({
 
 const TIP_IDS = [4, 8, 12, 16, 20];
 const FINGER_PAIRS = [[8, 6], [12, 10], [16, 14], [20, 18]];
+const VISION_CDN = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const distance = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+
+let visionFilesetPromise = null;
+async function getVisionFileset() {
+  if (!visionFilesetPromise) {
+    visionFilesetPromise = import(`${VISION_CDN}`).then(({ FilesetResolver }) => (
+      FilesetResolver.forVisionTasks(`${VISION_CDN}/wasm`)
+    ));
+  }
+  return visionFilesetPromise;
+}
+
 export async function createHandLandmarker() {
-  const { FilesetResolver, HandLandmarker } = await import(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14"
-  );
-  const vision = await FilesetResolver.forVisionTasks(
-    "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm"
-  );
+  const { HandLandmarker } = await import(`${VISION_CDN}`);
+  const vision = await getVisionFileset();
   return HandLandmarker.createFromOptions(vision, {
     baseOptions: {
       modelAssetPath: "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
@@ -28,6 +36,20 @@ export async function createHandLandmarker() {
     minHandDetectionConfidence: 0.5,
     minHandPresenceConfidence: 0.5,
     minTrackingConfidence: 0.5,
+  });
+}
+
+export async function createFaceLandmarker() {
+  const { FaceLandmarker } = await import(`${VISION_CDN}`);
+  const vision = await getVisionFileset();
+  return FaceLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      delegate: "GPU",
+    },
+    runningMode: "VIDEO",
+    numFaces: 1,
+    outputFaceBlendshapes: true,
   });
 }
 
@@ -126,25 +148,71 @@ export function aggregateGesture(hands) {
   return "neutral";
 }
 
+function blendshapeScore(categories, name) {
+  const hit = categories?.find((item) => item.categoryName === name);
+  return hit?.score ?? 0;
+}
+
 export class GestureTracker {
   constructor(video) {
-    this.video = video; this.landmarker = null; this.stream = null; this.lastVideo = -1;
-    this.states = new Map(); this.lostFrames = 0; this.thresholds = { ...DEFAULT_THRESHOLDS };
+    this.video = video;
+    this.landmarker = null;
+    this.faceLandmarker = null;
+    this.stream = null;
+    this.lastVideo = -1;
+    this.states = new Map();
+    this.lostFrames = 0;
+    this.thresholds = { ...DEFAULT_THRESHOLDS };
+    this.wasBlinking = false;
+    this.blinkCooldownUntil = 0;
   }
   async start() {
     this.landmarker = await createHandLandmarker();
-    this.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
-    this.video.srcObject = this.stream; await this.video.play(); return this;
+    try {
+      this.faceLandmarker = await createFaceLandmarker();
+    } catch {
+      this.faceLandmarker = null;
+    }
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
+      audio: false,
+    });
+    this.video.srcObject = this.stream;
+    await this.video.play();
+    return this;
+  }
+  detectBlink(now) {
+    if (!this.faceLandmarker) return false;
+    try {
+      const face = this.faceLandmarker.detectForVideo(this.video, now);
+      const categories = face.faceBlendshapes?.[0]?.categories || [];
+      const left = blendshapeScore(categories, "eyeBlinkLeft");
+      const right = blendshapeScore(categories, "eyeBlinkRight");
+      const closed = left > 0.42 && right > 0.42;
+      let blink = false;
+      if (closed && !this.wasBlinking && now >= this.blinkCooldownUntil) {
+        blink = true;
+        this.blinkCooldownUntil = now + 750;
+      }
+      this.wasBlinking = closed;
+      return blink;
+    } catch {
+      return false;
+    }
   }
   update(now, dt) {
     if (!this.landmarker || this.video.readyState < 2 || this.video.currentTime === this.lastVideo) return null;
     this.lastVideo = this.video.currentTime;
+    const blink = this.detectBlink(now);
     const result = this.landmarker.detectForVideo(this.video, now);
     const list = result.landmarks || [];
     if (!list.length) {
       this.lostFrames += 1;
-      if (this.lostFrames > 8) { for (const state of this.states.values()) state.reset(); return { hands: [], gesture: "neutral" }; }
-      return null;
+      if (this.lostFrames > 8) {
+        for (const state of this.states.values()) state.reset();
+        return { hands: [], gesture: "neutral", blink };
+      }
+      return blink ? { hands: this.lastHands || [], gesture: this.lastGesture || "neutral", blink } : null;
     }
     this.lostFrames = 0;
     const hands = list.slice(0, 2).map((landmarks, index) => {
@@ -152,7 +220,14 @@ export class GestureTracker {
       if (!this.states.has(key)) this.states.set(key, new StableHand());
       return { ...this.states.get(key).update(measureRawHand(landmarks), this.thresholds, dt), key };
     });
-    return { hands, gesture: aggregateGesture(hands) };
+    const gesture = aggregateGesture(hands);
+    this.lastHands = hands;
+    this.lastGesture = gesture;
+    return { hands, gesture, blink };
   }
-  stop() { this.stream?.getTracks().forEach((track) => track.stop()); this.landmarker?.close(); }
+  stop() {
+    this.stream?.getTracks().forEach((track) => track.stop());
+    this.landmarker?.close();
+    this.faceLandmarker?.close();
+  }
 }
