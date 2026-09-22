@@ -36,7 +36,6 @@ let active = false;
 let filterIndex = 0;
 let gateFxIndex = 0;
 let cameraStarting = false;
-let retries = 0;
 let pointer = { x: 0.5, y: 0.5 };
 let previousGesture = "neutral";
 let pinchArmedUntil = 0;
@@ -410,14 +409,15 @@ function loop(now) {
 }
 
 function setCameraUi(on, busy = false) {
-  startBtn.disabled = busy;
+  startBtn.classList.toggle("is-busy", busy);
   startBtn.setAttribute("aria-pressed", on ? "true" : "false");
-  if (busy) startBtn.textContent = on ? "끄는 중…" : "켜는 중…";
+  startBtn.setAttribute("aria-busy", busy ? "true" : "false");
+  if (busy) startBtn.textContent = on ? "끄는 중…" : "권한 요청 중…";
   else startBtn.textContent = on ? "카메라 끄기" : "카메라 켜기";
 }
 
 function stopCamera() {
-  if (cameraStarting) return;
+  cameraStarting = false;
   tracker?.stop();
   tracker = null;
   video.srcObject = null;
@@ -425,42 +425,55 @@ function stopCamera() {
   lastGate = null;
   wasGatePinching = false;
   errorEl.textContent = "";
-  gestureEl.textContent = "카메라가 꺼져 있습니다. 다시 켜려면 버튼을 누르세요.";
+  gestureEl.textContent = "카메라가 꺼져 있습니다. 분홍 버튼으로 다시 켤 수 있어요.";
   nameEl.textContent = "CAMERA OFF";
   indexEl.textContent = "FILTER 00";
   setCameraUi(false);
 }
 
 async function start() {
-  if (cameraStarting || tracker) return;
+  if (cameraStarting) return;
+  if (tracker) {
+    stopCamera();
+    return;
+  }
   cameraStarting = true;
   setCameraUi(false, true);
   errorEl.textContent = "";
+  gestureEl.textContent = "브라우저 카메라 권한을 허용해 주세요…";
+  const pending = new GestureTracker(video);
   try {
-    tracker = new GestureTracker(video);
-    await tracker.start();
+    await pending.start();
+    if (!cameraStarting) {
+      // 로딩 중 사용자가 취소함
+      pending.stop();
+      return;
+    }
+    tracker = pending;
     cameraStarting = false;
     gestureEl.textContent = GUIDE_IDLE;
     setFilter(filterIndex, active);
     setCameraUi(true);
   } catch (error) {
     cameraStarting = false;
-    tracker?.stop();
+    pending.stop();
     tracker = null;
     video.srcObject = null;
-    errorEl.textContent = `카메라를 시작할 수 없습니다. ${error.message || error}`;
+    const denied = error.name === "NotAllowedError" || error.name === "PermissionDeniedError";
+    errorEl.textContent = denied
+      ? "카메라 권한이 거부되었습니다. 주소창 카메라 아이콘에서 허용 후 다시 눌러 주세요."
+      : `카메라를 시작할 수 없습니다. ${error.message || error}`;
+    gestureEl.textContent = "카메라 켜기 버튼을 다시 눌러 주세요.";
     setCameraUi(false);
-    if (error.name !== "NotAllowedError" && retries < 1) {
-      retries += 1;
-      setTimeout(start, 1800);
-    }
   }
 }
 
 function toggleCamera() {
-  if (cameraStarting) return;
-  if (tracker) stopCamera();
-  else start();
+  if (tracker || cameraStarting) {
+    stopCamera();
+    return;
+  }
+  start();
 }
 
 canvas.addEventListener("pointermove", (event) => {
@@ -476,9 +489,13 @@ addEventListener("wheel", (event) => {
   setFilter(filterIndex + (event.deltaY > 0 ? 1 : -1), true);
 }, { passive: true });
 addEventListener("resize", resize);
-startBtn.addEventListener("click", toggleCamera);
+startBtn.addEventListener("click", (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  toggleCamera();
+});
 resize();
-gestureEl.textContent = GUIDE_IDLE;
+gestureEl.textContent = "오른쪽 아래 분홍 버튼으로 카메라를 켜 주세요.";
+nameEl.textContent = "CAMERA OFF";
 setCameraUi(false);
 requestAnimationFrame(loop);
-start();

@@ -167,18 +167,19 @@ export class GestureTracker {
     this.blinkCooldownUntil = 0;
   }
   async start() {
-    this.landmarker = await createHandLandmarker();
-    try {
-      this.faceLandmarker = await createFaceLandmarker();
-    } catch {
-      this.faceLandmarker = null;
-    }
+    // 권한을 먼저 받고, 모델은 그 다음에 로드 (버튼이 오래 멈춘 것처럼 보이지 않게)
     this.stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: "user", width: { ideal: 1280 }, height: { ideal: 720 } },
       audio: false,
     });
     this.video.srcObject = this.stream;
     await this.video.play();
+    this.landmarker = await createHandLandmarker();
+    try {
+      this.faceLandmarker = await createFaceLandmarker();
+    } catch {
+      this.faceLandmarker = null;
+    }
     return this;
   }
   detectBlink(now) {
